@@ -1,0 +1,911 @@
+<!doctype html>
+<html lang="nl">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>PC Bouwlab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+/* Concept: een werkbank met antistatische mat. Links de bouwtekening van het moederbord, rechts het stappenpaneel. Koper is de enige accentkleur. */
+:root{
+  --bg:#e8eee7; --grid:#d0dcd2; --surface:#f5f8f3; --ink:#15221c; --muted:#556860; --line:#b4c4b8;
+  --copper:#b85a22; --on-copper:#ffffff; --ok:#1d7447; --bad:#b0342a; --warn:#a56a10;
+  --pcb:#1f5e4a; --pcb-d:#143f31; --metal:#aab5ae; --metal2:#8d9a93; --slot:#0f1d18; --gold:#d6a62c;
+  --ram:#2f6aa8; --ssd:#7a4ea0; --psu:#3a4742; --case:#6a7b72; --casefill:#dde6dc; --gpu:#2c3531; --cpu:#c9d2cc;
+  --c1:#c9962a; --c2:#2f6aa8; --c3:#8b52b8; --c4:#d0642a; --c5:#2a8a6a; --c6:#b0342a; --c7:#6a7b72;
+  --disp:'Big Shoulders Display','Arial Narrow',Impact,sans-serif;
+  --body:'Instrument Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111b17; --grid:#1a2a24; --surface:#192520; --ink:#e4eee8; --muted:#8fa69b; --line:#2f433a;
+    --copper:#e58f55; --on-copper:#1b110a; --ok:#58c88c; --bad:#f0796c; --warn:#e3ab4c;
+    --pcb:#2f7d64; --pcb-d:#1f5646; --metal:#6d7b74; --metal2:#55645d; --slot:#070d0b; --gold:#e4b94d;
+    --ram:#5b9ae0; --ssd:#a67dd0; --psu:#46544e; --case:#4d6057; --casefill:#14201b; --gpu:#3a4640; --cpu:#aab6af;
+    --c1:#e0b04a; --c2:#5b9ae0; --c3:#b283dc; --c4:#e8804a; --c5:#4cb894; --c6:#f0796c; --c7:#8fa69b;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111b17; --grid:#1a2a24; --surface:#192520; --ink:#e4eee8; --muted:#8fa69b; --line:#2f433a;
+  --copper:#e58f55; --on-copper:#1b110a; --ok:#58c88c; --bad:#f0796c; --warn:#e3ab4c;
+  --pcb:#2f7d64; --pcb-d:#1f5646; --metal:#6d7b74; --metal2:#55645d; --slot:#070d0b; --gold:#e4b94d;
+  --ram:#5b9ae0; --ssd:#a67dd0; --psu:#46544e; --case:#4d6057; --casefill:#14201b; --gpu:#3a4640; --cpu:#aab6af;
+  --c1:#e0b04a; --c2:#5b9ae0; --c3:#b283dc; --c4:#e8804a; --c5:#4cb894; --c6:#f0796c; --c7:#8fa69b;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  background-color:var(--bg);color:var(--ink);font:400 16px/1.5 var(--body);
+  padding-inline:16px;padding-block:0 120px;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;
+}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--copper);outline-offset:2px}
+.wrap{max-width:1040px;margin-inline:auto}
+.mono{font-family:var(--mono)}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.bad{color:var(--bad)}.okc{color:var(--ok)}
+
+/* kop */
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px 24px;flex-wrap:wrap;padding-block:18px}
+.lft{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.back{font-size:13px;color:var(--muted);text-decoration:none;border-bottom:1px solid var(--line)}
+.back:hover{color:var(--copper);border-color:var(--copper)}
+.brand{background:none;border:0;padding:0;cursor:pointer;font-family:var(--disp);font-weight:800;font-size:26px;letter-spacing:.06em;text-transform:uppercase}
+.brand span{color:var(--copper)}
+.phases{display:flex;gap:6px;list-style:none;margin:0;padding:0;flex-wrap:wrap}
+.phases li{font-size:13px;padding:4px 10px;border:1.5px solid var(--line);color:var(--muted);background:var(--surface)}
+.phases li.on{border-color:var(--ink);color:var(--ink);font-weight:600}
+.phases li.done{border-color:var(--ok);color:var(--ok)}
+
+h1,h2,h3{text-wrap:balance}
+h1{font-family:var(--disp);font-weight:800;text-transform:uppercase;font-size:clamp(46px,9vw,88px);line-height:.92;letter-spacing:.005em;margin:0 0 18px}
+h2{font-family:var(--disp);font-weight:700;text-transform:uppercase;font-size:28px;letter-spacing:.02em;line-height:1.05;margin:0 0 10px}
+h3{font-size:16px;margin:0 0 4px}
+p{margin:0 0 12px}
+.kicker{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.lead{font-size:18px;max-width:58ch}
+
+/* start */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,230px);gap:32px;align-items:center;padding-block:20px 36px}
+.hero-art{width:100%;max-width:230px;height:auto;justify-self:end}
+@media (max-width:640px){.hero{grid-template-columns:minmax(0,1fr)}.hero-art{justify-self:start;max-width:150px}}
+.briefs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:14px;margin-block:14px 24px}
+.brief{display:flex;flex-direction:column;gap:10px;text-align:left;background:var(--surface);border:1.5px solid var(--ink);padding:16px;cursor:pointer;min-width:0}
+.brief:hover{border-color:var(--copper);box-shadow:inset 0 0 0 1px var(--copper)}
+.brief .q{color:var(--muted);font-size:15px;margin:0}
+.brief-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.brief-h b{font-family:var(--disp);font-size:26px;text-transform:uppercase;letter-spacing:.02em;line-height:1}
+.lvl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.budget{font-size:22px;font-weight:500}
+.stars{letter-spacing:.15em;color:var(--copper);font-size:18px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-family:var(--mono);font-size:12px;padding:2px 7px;border:1px solid var(--line);background:var(--bg);white-space:nowrap}
+.toggle{display:flex;gap:10px;align-items:flex-start;max-width:60ch;cursor:pointer}
+.toggle input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--copper);flex:none}
+.toggle small{display:block;color:var(--muted)}
+
+/* knoppen */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:10px 20px;border:1.5px solid var(--copper);background:var(--copper);color:var(--on-copper);font-weight:600;cursor:pointer;border-radius:3px}
+.btn:hover{filter:brightness(1.07)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--ink)}
+
+/* kiezen */
+.pick{display:grid;grid-template-columns:minmax(0,1fr);gap:22px;align-items:start}
+@media (min-width:900px){.pick{grid-template-columns:minmax(0,1fr) 340px}.side{position:sticky;top:16px}}
+.brief-card{background:var(--surface);border:1.5px solid var(--ink);padding:16px;margin-bottom:18px}
+.brief-card .q{font-size:17px;margin-bottom:10px}
+.req{display:flex;flex-wrap:wrap;gap:6px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.tab{background:var(--surface);border:1.5px solid var(--line);padding:8px 12px;cursor:pointer;min-height:42px;border-radius:3px}
+.tab[aria-pressed="true"]{border-color:var(--ink);font-weight:600;box-shadow:inset 0 -3px 0 var(--copper)}
+.tab .tick{color:var(--ok);margin-left:4px}
+.blurb{color:var(--muted);max-width:62ch;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr));gap:10px}
+.opt{display:flex;flex-direction:column;gap:8px;text-align:left;background:var(--surface);border:1.5px solid var(--line);padding:12px;cursor:pointer;min-width:0;border-radius:3px}
+.opt:hover{border-color:var(--ink)}
+.opt[aria-pressed="true"]{border-color:var(--copper);box-shadow:inset 0 0 0 1.5px var(--copper)}
+.opt-h{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.opt-h b{font-weight:600;overflow-wrap:anywhere}
+.price{font-family:var(--mono);font-weight:500;white-space:nowrap}
+.flag{font-size:13px;color:var(--bad)}
+.card{background:var(--surface);border:1.5px solid var(--line);padding:14px;margin-bottom:14px}
+.meter{height:10px;background:var(--line);margin-block:8px 4px}
+.meter i{display:block;height:100%;background:var(--ok);max-width:100%}
+.meter.over i{background:var(--bad)}
+.meter.pw{position:relative;margin-block:10px 6px}
+.meter.pw b{position:absolute;top:-4px;bottom:-4px;width:3px;margin-left:-1px;background:var(--ink)}
+.list{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.list li{display:flex;gap:8px;justify-content:space-between;align-items:baseline;font-size:14px;min-width:0}
+.list li span:first-child{min-width:0;overflow-wrap:anywhere}
+.row-ok{color:var(--ok)}.row-bad{color:var(--bad)}.row-n{color:var(--muted)}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:8px;font-size:14px}
+.checks li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:6px}
+.verdict{border:2px solid var(--bad);background:var(--surface);padding:14px;margin-bottom:14px}
+.verdict ul{margin:8px 0 0;padding-left:18px;display:grid;gap:6px}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--surface);border-top:1.5px solid var(--ink);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px))}
+.bar-in{max-width:1040px;margin-inline:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.bar-t{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.bar-t strong{font-size:22px;font-weight:500}
+
+/* bouwen */
+.build{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
+@media (min-width:860px){.build{grid-template-columns:minmax(0,420px) minmax(0,1fr)}.scenebox{position:sticky;top:16px}}
+.scenebox{border:1.5px solid var(--ink);background:var(--surface);max-width:440px}
+.scene{display:block;width:100%;height:auto}
+.panel{background:var(--surface);border:1.5px solid var(--ink);padding:18px;min-width:0}
+.msgbox{min-height:4px}
+.msg{border-left:4px solid var(--line);background:var(--bg);padding:10px 12px;margin-block:12px}
+.msg.ok{border-color:var(--ok)}.msg.bad{border-color:var(--bad)}
+.tip{color:var(--muted);font-size:14px}
+.stepgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,210px),1fr));gap:8px;margin-block:12px}
+.stepbtn{display:flex;flex-direction:column;gap:2px;text-align:left;background:var(--bg);border:1.5px solid var(--line);padding:10px 12px;cursor:pointer;min-width:0;border-radius:3px}
+.stepbtn:hover{border-color:var(--copper)}
+.stepbtn b{font-weight:600}
+.stepbtn span{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.done-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.done-list .chip{color:var(--ok);border-color:var(--ok)}
+.act{display:flex;flex-wrap:wrap;gap:10px;margin-block:14px 4px}
+.optlist{display:grid;gap:8px;margin-block:12px}
+.choice{text-align:left;background:var(--bg);border:1.5px solid var(--line);padding:11px 13px;cursor:pointer;border-radius:3px}
+.choice:hover:not(:disabled){border-color:var(--ink)}
+.choice:disabled{opacity:.55;cursor:not-allowed;text-decoration:line-through}
+.ordbtn{display:flex;gap:10px;align-items:flex-start;text-align:left;background:var(--bg);border:1.5px solid var(--line);padding:11px 13px;cursor:pointer;border-radius:3px}
+.ordbtn .n{font-family:var(--mono);min-width:22px;height:22px;display:inline-grid;place-items:center;border:1.5px solid var(--line);font-size:12px;flex:none}
+.ordbtn.d{border-color:var(--ok)}
+.ordbtn.d .n{background:var(--ok);color:var(--bg);border-color:var(--ok)}
+.cab{display:flex;gap:10px;align-items:center;text-align:left;background:var(--bg);border:1.5px solid var(--line);padding:10px 12px;cursor:pointer;border-radius:3px}
+.cab i{width:14px;height:14px;flex:none;border-radius:50%}
+.cab[aria-pressed="true"]{border-color:var(--copper);box-shadow:inset 0 0 0 1.5px var(--copper)}
+.cab.d{border-color:var(--ok);color:var(--muted)}
+.post{font-family:var(--mono);font-size:13px;background:#0b130f;color:#9be3b5;padding:14px;margin:12px 0;overflow-x:auto;line-height:1.55;white-space:pre}
+.post span{display:block;opacity:0;animation:ln .01s forwards}
+@keyframes ln{to{opacity:1}}
+
+/* tekening */
+.sc-pcb{fill:var(--pcb);stroke:var(--pcb-d);stroke-width:2}
+.sc-metal{fill:var(--metal)}.sc-metal2{fill:var(--metal2)}
+.sc-slot{fill:var(--slot)}
+.sc-gold{fill:var(--gold)}
+.sc-sock{fill:var(--slot);stroke:var(--metal2);stroke-width:2}
+.sc-cpu{fill:var(--cpu);stroke:var(--metal2);stroke-width:1.5}
+.sc-fan{fill:var(--gpu)}
+.sc-blade{fill:var(--metal)}
+.sc-hub{fill:var(--gold)}
+.sc-ram{fill:var(--ram)}
+.sc-chip{fill:var(--slot);opacity:.7}
+.sc-ssd{fill:var(--ssd)}
+.sc-port{fill:var(--slot);stroke:var(--metal);stroke-width:1}
+.sc-chipset{fill:var(--metal2)}
+.sc-gpu{fill:var(--gpu);stroke:var(--metal2);stroke-width:1.5}
+.sc-gfan{fill:var(--slot);stroke:var(--metal2);stroke-width:1}
+.sc-psu{fill:var(--psu);stroke:var(--ink);stroke-width:1.5}
+.sc-case{fill:var(--casefill);stroke:var(--case);stroke-width:3}
+.sc-foot{fill:none;stroke:var(--copper);stroke-width:1.5;stroke-dasharray:5 4}
+.sc-so{fill:var(--gold)}.sc-sh{fill:var(--slot)}
+.sc-ring{fill:none;stroke:var(--case);stroke-width:1.5}
+.sc-screw{fill:var(--metal);stroke:var(--slot);stroke-width:1}
+.sc-t{font-family:var(--mono);font-size:9px;fill:var(--muted);letter-spacing:.08em}
+.sc-t2{font-family:var(--mono);font-size:9px;fill:#fff}
+.sc-lab{font-family:var(--mono);font-size:9px;fill:#fff}
+.sc-num{font-family:var(--mono);font-size:9px;fill:#fff}
+.sc-cable{fill:none;stroke-width:3.5;stroke-linecap:round}
+.target{fill:none;stroke:var(--copper);stroke-width:2;stroke-dasharray:5 3}
+.hot{fill:transparent;stroke:var(--copper);stroke-width:1.5;stroke-dasharray:4 3;cursor:pointer}
+.hot:hover,.hot:focus-visible{fill:var(--copper);fill-opacity:.35;outline:none}
+.hot.sel{fill:var(--copper);fill-opacity:.55;stroke-dasharray:none}
+.hot.dn{display:none}
+@media (prefers-reduced-motion:no-preference){
+  .hot,.target{animation:dash 1.2s linear infinite}
+  .hot.sel{animation:none}
+  @keyframes dash{to{stroke-dashoffset:-14}}
+}
+.res-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:10px;margin-block:14px}
+.badge{border:1.5px solid var(--line);padding:12px;background:var(--bg)}
+.badge.on{border-color:var(--copper)}
+.badge .stars{display:block;margin-bottom:4px}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl td{padding:6px 4px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl td:last-child{text-align:right;font-family:var(--mono);white-space:nowrap}
+.tbl-wrap{overflow-x:auto}
+.learn{padding-left:18px;display:grid;gap:6px;max-width:64ch}
+</style>
+
+<div class="wrap" id="app"></div>
+
+<script>
+(function(){
+'use strict';
+var app=document.getElementById('app');
+
+/* ---------- gegevens ---------- */
+var CATS=[
+ {id:'cpu',label:'Processor',blurb:'De processor (CPU) is het brein van de pc. Het sockettype (AM4, AM5, LGA1700) bepaalt welke moederborden passen. Een F achter de naam betekent: geen ingebouwde graphics.'},
+ {id:'board',label:'Moederbord',blurb:'Alles wordt hierop aangesloten. Het socket moet bij de processor passen, het geheugentype (DDR4 of DDR5) bij je RAM, en het formaat (ATX of mATX) bij de kast.'},
+ {id:'ram',label:'Geheugen',blurb:'Werkgeheugen (RAM) bepaalt hoeveel je tegelijk open kunt hebben. DDR4 en DDR5 hebben een andere kerf en passen niet in elkaars sleuf. Door het wereldwijde geheugentekort is RAM veel duurder dan een paar jaar geleden, en DDR5 kost nu ruim het dubbele van DDR4. Dat kan je keuze voor processor en moederbord bepalen.'},
+ {id:'gpu',label:'Videokaart',blurb:'Voor games en videobewerking. Let op de lengte (past hij in de kast?) en het verbruik. Sommige processors hebben graphics ingebouwd, dan kan het ook zonder losse kaart.'},
+ {id:'ssd',label:'Opslag',blurb:'Een NVMe-SSD steek je direct in het moederbord, zonder kabel. Veel sneller dan een harde schijf.'},
+ {id:'cooler',label:'Koeler',blurb:'Voert de warmte van de processor af. Hij moet genoeg wattage aankunnen en onder het deksel van je kast passen.'},
+ {id:'psu',label:'Voeding',blurb:'Levert stroom aan alles. Te zwak betekent crashes. Reken processor + videokaart + 100 W voor de rest, en tel er 30% marge bij op.'},
+ {id:'case',label:'Kast',blurb:'Bepaalt welk moederbordformaat past, hoe lang je videokaart mag zijn en hoe hoog je koeler.'}
+];
+var PARTS={
+ cpu:[
+  {id:'r5-7600',name:'Ryzen 5 7600',price:210,socket:'AM5',cores:6,w:65,igpu:true},
+  {id:'r7-7700',name:'Ryzen 7 7700',price:300,socket:'AM5',cores:8,w:65,igpu:true},
+  {id:'r5-5600',name:'Ryzen 5 5600',price:120,socket:'AM4',cores:6,w:65,igpu:false},
+  {id:'i3-12100',name:'Core i3-12100',price:110,socket:'LGA1700',cores:4,w:60,igpu:true},
+  {id:'i5-12400f',name:'Core i5-12400F',price:150,socket:'LGA1700',cores:6,w:65,igpu:false},
+  {id:'i5-14600k',name:'Core i5-14600K',price:310,socket:'LGA1700',cores:14,w:125,igpu:true}
+ ],
+ board:[
+  {id:'b650m',name:'B650M mATX',price:140,socket:'AM5',mem:'DDR5',ff:'mATX'},
+  {id:'b650',name:'B650 ATX',price:190,socket:'AM5',mem:'DDR5',ff:'ATX'},
+  {id:'b550',name:'B550 ATX',price:110,socket:'AM4',mem:'DDR4',ff:'ATX'},
+  {id:'b760-d4',name:'B760 ATX (DDR4)',price:120,socket:'LGA1700',mem:'DDR4',ff:'ATX'},
+  {id:'b760m-d5',name:'B760M mATX (DDR5)',price:135,socket:'LGA1700',mem:'DDR5',ff:'mATX'}
+ ],
+ ram:[
+  {id:'d4-16',name:'DDR4 16 GB (2×8)',price:110,type:'DDR4',gb:16},
+  {id:'d4-32',name:'DDR4 32 GB (2×16)',price:235,type:'DDR4',gb:32},
+  {id:'d5-16',name:'DDR5 16 GB (2×8)',price:220,type:'DDR5',gb:16},
+  {id:'d5-32',name:'DDR5 32 GB (2×16)',price:400,type:'DDR5',gb:32}
+ ],
+ gpu:[
+  {id:'none',name:'Geen losse videokaart',price:0,len:0,w:0,vram:0},
+  {id:'rx7600',name:'Radeon RX 7600',price:270,len:267,w:165,vram:8},
+  {id:'rtx4060',name:'GeForce RTX 4060',price:300,len:240,w:115,vram:8},
+  {id:'rx7800xt',name:'Radeon RX 7800 XT',price:500,len:300,w:263,vram:16},
+  {id:'rtx4070s',name:'GeForce RTX 4070 Super',price:620,len:285,w:220,vram:12}
+ ],
+ ssd:[
+  {id:'s500',name:'NVMe SSD 500 GB',price:45,gb:500},
+  {id:'s1000',name:'NVMe SSD 1 TB',price:70,gb:1000},
+  {id:'s2000',name:'NVMe SSD 2 TB',price:130,gb:2000}
+ ],
+ cooler:[
+  {id:'box',name:'Boxkoeler',price:0,w:65,h:55,box:true},
+  {id:'tower-s',name:'Compacte torenkoeler',price:30,w:120,h:150,box:false},
+  {id:'tower-l',name:'Grote torenkoeler',price:45,w:200,h:165,box:false}
+ ],
+ psu:[
+  {id:'p450',name:'Voeding 450 W',price:45,w:450},
+  {id:'p550',name:'Voeding 550 W',price:60,w:550},
+  {id:'p650',name:'Voeding 650 W',price:75,w:650},
+  {id:'p750',name:'Voeding 750 W',price:95,w:750},
+  {id:'p850',name:'Voeding 850 W',price:120,w:850}
+ ],
+ 'case':[
+  {id:'c-compact',name:'Compacte mATX-kast',price:55,ff:['mATX'],gpuMax:280,coolerMax:155},
+  {id:'c-midi',name:'Midi-tower',price:80,ff:['ATX','mATX'],gpuMax:340,coolerMax:175},
+  {id:'c-glas',name:'Midi-tower met glas',price:95,ff:['ATX','mATX'],gpuMax:310,coolerMax:165}
+ ]
+};
+function chipsFor(c,p){
+ if(c==='cpu')return [p.socket,p.cores+' kernen',p.w+' W',p.igpu?'met graphics':'zonder graphics'];
+ if(c==='board')return [p.socket,p.mem,p.ff];
+ if(c==='ram')return [p.type,p.gb+' GB'];
+ if(c==='gpu')return p.len?[p.vram+' GB',p.len+' mm lang',p.w+' W']:['graphics van de processor'];
+ if(c==='ssd')return ['M.2',p.gb>=1000?(p.gb/1000)+' TB':p.gb+' GB'];
+ if(c==='cooler')return ['tot '+p.w+' W',p.h+' mm hoog'];
+ if(c==='psu')return [p.w+' W'];
+ return [p.ff.join(' / '),'kaart max '+p.gpuMax+' mm','koeler max '+p.coolerMax+' mm'];
+}
+var BRIEFS=[
+ {id:'student',naam:'Studie en kantoor',klant:'Sanne, student',lvl:'Makkelijk',budget:600,
+  tekst:'Ik typ scripties en kijk series. Games hoeven niet, maar hij moet wel vlot aanvoelen.',
+  eisen:{cores:4,ram:16,ssd:500,gpu:false}},
+ {id:'gamer',naam:'Eerste gaming-pc',klant:'Daan, 17',lvl:'Gemiddeld',budget:1000,
+  tekst:'Ik wil Fortnite en Minecraft met shaders soepel spelen. Meer dan 1000 euro heb ik niet.',
+  eisen:{cores:6,ram:16,ssd:500,gpu:true}},
+ {id:'creator',naam:'Videomontage-pc',klant:'Mila, videomaker',lvl:'Gevorderd',budget:1700,
+  tekst:'Ik bewerk 4K-video. Veel geheugen, snelle opslag en een stevige videokaart.',
+  eisen:{cores:8,ram:32,ssd:1000,gpu:true}}
+];
+
+/* ---------- opslag, toestand ---------- */
+var KEY='pc-bouwlab-beste';
+function loadBest(){try{return JSON.parse(localStorage.getItem(KEY))||{};}catch(e){return {};}}
+function saveBest(id,n){try{var b=loadBest();if((b[id]||0)<n){b[id]=n;localStorage.setItem(KEY,JSON.stringify(b));}}catch(e){}}
+var S={screen:'start',help:true,briefId:null,picks:{},cat:'cpu',attempts:0,v:null,A:null,final:null};
+function brief(){return BRIEFS.filter(function(b){return b.id===S.briefId;})[0];}
+function euro(n){return '€ '+n.toLocaleString('nl-NL');}
+function total(p){var t=0;CATS.forEach(function(c){if(p[c.id])t+=p[c.id].price;});return t;}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function catLabel(id){return CATS.filter(function(c){return c.id===id;})[0].label;}
+
+/* ---------- regels ---------- */
+function psuNeed(p){return Math.ceil((p.cpu.w+p.gpu.w+100)*1.3/50)*50;}
+function compat(p){
+ function row(label,cats,fn){
+  var miss=cats.filter(function(c){return !p[c];});
+  if(miss.length)return {label:label,cats:cats,ok:null,msg:'Wacht op je keuze voor '+miss.map(function(c){return catLabel(c).toLowerCase();}).join(' en ')+'.'};
+  var r=fn();return {label:label,cats:cats,ok:r[0],msg:r[1]};
+ }
+ return [
+  row('Processor en moederbord',['cpu','board'],function(){return p.cpu.socket===p.board.socket?[true,'Beide hebben socket '+p.cpu.socket+'.']:[false,'De '+p.cpu.name+' heeft socket '+p.cpu.socket+', dit moederbord heeft socket '+p.board.socket+'. Ze passen niet in elkaar.'];}),
+  row('Geheugen en moederbord',['ram','board'],function(){return p.ram.type===p.board.mem?[true,p.ram.type+' past in dit bord.']:[false,'Het geheugen is '+p.ram.type+', het moederbord gebruikt '+p.board.mem+'. De kerf zit op een andere plek, dus het past niet.'];}),
+  row('Moederbord en kast',['board','case'],function(){return p['case'].ff.indexOf(p.board.ff)>=0?[true,'Een '+p.board.ff+'-bord past in deze kast.']:[false,'Deze kast is alleen voor '+p['case'].ff.join(' of ')+'. Een '+p.board.ff+'-bord is te groot.'];}),
+  row('Videokaart en kast',['gpu','case'],function(){
+   if(!p.gpu.len)return [true,'Geen losse kaart, dus geen lengteprobleem.'];
+   return p.gpu.len<=p['case'].gpuMax?[true,p.gpu.len+' mm past (maximaal '+p['case'].gpuMax+' mm).']:[false,'De videokaart is '+p.gpu.len+' mm lang, de kast biedt maar '+p['case'].gpuMax+' mm.'];}),
+  row('Koeler en kast',['cooler','case'],function(){return p.cooler.h<=p['case'].coolerMax?[true,p.cooler.h+' mm past (maximaal '+p['case'].coolerMax+' mm).']:[false,'De koeler is '+p.cooler.h+' mm hoog, de kast laat maar '+p['case'].coolerMax+' mm toe. Het zijpaneel sluit dan niet.'];}),
+  row('Koeler en processor',['cooler','cpu'],function(){return p.cooler.w>=p.cpu.w?[true,'De koeler kan '+p.cooler.w+' W aan (processor: '+p.cpu.w+' W).']:[false,'Deze koeler kan '+p.cooler.w+' W aan, de '+p.cpu.name+' gebruikt tot '+p.cpu.w+' W. Hij gaat te heet worden.'];}),
+  row('Voeding',['psu','cpu','gpu'],function(){var n=psuNeed(p);return p.psu.w>=n?[true,p.psu.w+' W is genoeg (advies minimaal '+n+' W).']:[false,'Voor deze combinatie is minimaal '+n+' W nodig. Deze voeding levert '+p.psu.w+' W.'];}),
+  row('Beeld',['cpu','gpu'],function(){return (!p.gpu.len&&!p.cpu.igpu)?[false,'Zonder videokaart heb je een processor met ingebouwde graphics nodig. De '+p.cpu.name+' heeft die niet.']:[true,p.gpu.len?'Losse videokaart voor beeld.':'Beeld via de graphics van de processor.'];})
+ ];
+}
+function reqs(p,b){
+ var e=b.eisen,r=[];
+ r.push(!p.cpu?{ok:null,msg:'Minimaal '+e.cores+' processorkernen'}:p.cpu.cores>=e.cores?{ok:true,msg:p.cpu.cores+' kernen (minimaal '+e.cores+')'}:{ok:false,msg:'Je klant wil minimaal '+e.cores+' processorkernen. De '+p.cpu.name+' heeft er '+p.cpu.cores+'.'});
+ r.push(!p.ram?{ok:null,msg:'Minimaal '+e.ram+' GB geheugen'}:p.ram.gb>=e.ram?{ok:true,msg:p.ram.gb+' GB geheugen (minimaal '+e.ram+')'}:{ok:false,msg:'Je klant wil minimaal '+e.ram+' GB geheugen. Je hebt '+p.ram.gb+' GB gekozen.'});
+ var gb=function(n){return n>=1000?(n/1000)+' TB':n+' GB';};
+ r.push(!p.ssd?{ok:null,msg:'Minimaal '+gb(e.ssd)+' opslag'}:p.ssd.gb>=e.ssd?{ok:true,msg:gb(p.ssd.gb)+' opslag (minimaal '+gb(e.ssd)+')'}:{ok:false,msg:'Je klant wil minimaal '+gb(e.ssd)+' opslag. Je hebt '+gb(p.ssd.gb)+' gekozen.'});
+ if(e.gpu)r.push(!p.gpu?{ok:null,msg:'Een losse videokaart'}:p.gpu.len?{ok:true,msg:'Losse videokaart gekozen'}:{ok:false,msg:'Je klant wil spelen of video bewerken en heeft een losse videokaart nodig.'});
+ return r;
+}
+function failsFor(cat,opt){
+ var t={};for(var k in S.picks)t[k]=S.picks[k];t[cat]=opt;
+ return compat(t).filter(function(r){return r.ok===false&&r.cats.indexOf(cat)>=0;}).map(function(r){return r.label;});
+}
+
+/* ---------- hulp ---------- */
+function stars(n){var s='';for(var i=0;i<3;i++)s+=i<n?'★':'☆';return s;}
+function shell(inner,phase){
+ var names=['Onderdelen','Montage','Uitslag'];
+ var ph=phase==null?'':'<ol class="phases">'+names.map(function(n,i){return '<li class="'+(i<phase?'done':i===phase?'on':'')+'"><span class="mono">'+(i+1)+'</span> '+n+'</li>';}).join('')+'</ol>';
+ return '<header class="top"><div class="lft"><span><a class="back" href="index.html">← Alle ICT-lessen</a> &nbsp; <a class="back" href="posters.html" target="_blank" rel="noopener">Posters</a></span><button class="brand" data-a="home" data-fk="brand">PC <span>Bouwlab</span></button></div>'+ph+'</header>'+inner;
+}
+
+/* ---------- startscherm ---------- */
+function viewStart(){
+ var best=loadBest();
+ var cards=BRIEFS.map(function(b){
+  var e=b.eisen;
+  return '<button class="brief" data-a="start" data-id="'+b.id+'" data-fk="b-'+b.id+'">'+
+   '<div class="brief-h"><b>'+b.naam+'</b><span class="lvl mono">'+b.lvl+'</span></div>'+
+   '<p class="q">“'+b.tekst+'”<br><span class="small">'+b.klant+'</span></p>'+
+   '<div class="chips"><span class="chip">'+e.cores+'+ kernen</span><span class="chip">'+e.ram+'+ GB RAM</span><span class="chip">'+(e.ssd>=1000?(e.ssd/1000)+' TB':e.ssd+' GB')+'+ opslag</span>'+(e.gpu?'<span class="chip">losse videokaart</span>':'')+'</div>'+
+   '<div class="brief-h"><span class="budget mono">'+euro(b.budget)+'</span><span class="stars" aria-label="Beste score">'+stars(best[b.id]||0)+'</span></div></button>';
+ }).join('');
+ var art='<svg class="hero-art" viewBox="0 0 220 220" aria-hidden="true">'+
+  '<rect x="4" y="4" width="212" height="212" rx="6" class="sc-pcb"/>'+
+  '<rect x="36" y="44" width="150" height="150" rx="4" class="sc-sock"/>'+
+  '<path class="sc-gold" d="M42 50h26l-26 26z"/>'+
+  '<g transform="translate(14 -14)"><rect x="62" y="68" width="104" height="104" rx="4" class="sc-cpu"/><path class="sc-gold" d="M68 74h22l-22 22z"/>'+
+  '<rect x="92" y="98" width="46" height="46" rx="2" fill="none" stroke="var(--metal2)" stroke-width="1.5"/></g>'+
+  '<text class="sc-t2" x="12" y="210" style="font-size:9px;letter-spacing:.08em">PIN 1 LIJNT UIT MET HET DRIEHOEKJE</text></svg>';
+ return shell(
+  '<section class="hero"><div><p class="kicker mono">Interactieve bouwcursus</p><h1>Bouw een pc, schroef voor schroef.</h1>'+
+  '<p class="lead">Een klant komt met een budget. Eerst kies je onderdelen die echt bij elkaar passen. Daarna monteer je ze in de goede volgorde, van het gouden driehoekje op de processor tot het eerste opstartscherm.</p></div>'+art+'</section>'+
+  '<section><h2>Kies een opdracht</h2><div class="briefs">'+cards+'</div></section>'+
+  '<p class="small muted" style="max-width:62ch">Prijzen zijn afgerond en gebaseerd op Europese marktprijzen van oktober 2026. Werkgeheugen is door het tekort extra duur: DDR5 32 GB kost ongeveer €400, DDR4 32 GB ongeveer €235.</p>'+
+  '<label class="toggle"><input type="checkbox" id="help"'+(S.help?' checked':'')+'><span>Hulp bij compatibiliteit<small>Laat tijdens het kiezen direct zien welke onderdelen niet bij elkaar passen. Zet uit voor een echte uitdaging.</small></span></label>',null);
+}
+
+/* ---------- onderdelen kiezen ---------- */
+function glyph(ok){return ok===true?'✓':ok===false?'✗':'·';}
+function cls(ok){return ok===true?'row-ok':ok===false?'row-bad':'row-n';}
+function power(p){
+ var c=p.cpu?p.cpu.w:0,g=p.gpu?p.gpu.w:0,load=c+g+100;
+ return {c:c,g:g,rest:100,load:load,adv:Math.ceil(load*1.3/50)*50};
+}
+function powerCard(p){
+ var w=power(p),psu=p.psu,max=Math.max(w.adv,psu?psu.w:0),bad=S.help&&psu&&psu.w<w.adv;
+ var cpuT=p.cpu?w.c+' W':'<span class="muted">nog niet gekozen</span>';
+ var gpuT=!p.gpu?'<span class="muted">nog niet gekozen</span>':(p.gpu.len?w.g+' W':'0 W <span class="muted">(ingebouwd)</span>');
+ var st='';
+ if(S.help&&psu)st=bad?'<p class="small row-bad" style="margin:8px 0 0">✗ Te weinig: kies minimaal '+w.adv+' W.</p>':'<p class="small row-ok" style="margin:8px 0 0">✓ Genoeg voor deze onderdelen.</p>';
+ return '<div class="card"><h3>Stroomverbruik</h3><ul class="list">'+
+  '<li><span>Processor</span><span class="mono">'+cpuT+'</span></li>'+
+  '<li><span>Videokaart</span><span class="mono">'+gpuT+'</span></li>'+
+  '<li><span>Overig <span class="muted">(bord, RAM, SSD, fans)</span></span><span class="mono">'+w.rest+' W</span></li>'+
+  '<li><b>Totaal</b><b class="mono">'+w.load+' W</b></li>'+
+  '<li><b>Advies voeding</b><b class="mono">'+w.adv+' W</b></li>'+
+  '<li><span>Gekozen voeding</span><span class="mono">'+(psu?psu.w+' W':'<span class="muted">nog niet gekozen</span>')+'</span></li></ul>'+
+  '<div class="meter pw'+(bad?' over':'')+'" role="img" aria-label="Verbruik '+w.load+' W van '+(psu?psu.w:w.adv)+' W"><i style="width:'+Math.min(100,Math.round(w.load/max*100))+'%"></i><b style="left:'+Math.round(w.adv/max*100)+'%"></b></div>'+
+  '<span class="small muted">Balk: verbruik. Streepje: advies. Advies = totaal × 1,3 (30% marge), afgerond op 50 W.</span>'+st+'</div>';
+}
+function viewPick(){
+ var b=brief(),p=S.picks,t=total(p),over=t>b.budget;
+ var cat=CATS.filter(function(c){return c.id===S.cat;})[0];
+ var rq=reqs(p,b),ck=compat(p);
+ var tabs=CATS.map(function(c){return '<button class="tab" data-a="cat" data-id="'+c.id+'" data-fk="t-'+c.id+'" aria-pressed="'+(c.id===S.cat)+'">'+c.label+(p[c.id]?'<span class="tick">✓</span>':'')+'</button>';}).join('');
+ var opts=PARTS[S.cat].map(function(o){
+  var sel=p[S.cat]&&p[S.cat].id===o.id;
+  var f=(S.help&&!sel)?failsFor(S.cat,o):[];
+  return '<button class="opt" data-a="pick" data-cat="'+S.cat+'" data-id="'+o.id+'" data-fk="o-'+o.id+'" aria-pressed="'+!!sel+'">'+
+   '<span class="opt-h"><b>'+o.name+'</b><span class="price">'+euro(o.price)+'</span></span>'+
+   '<span class="chips">'+chipsFor(S.cat,o).map(function(c){return '<span class="chip">'+c+'</span>';}).join('')+'</span>'+
+   (f.length?'<span class="flag">✗ Past niet: '+f[0].toLowerCase()+'</span>':'')+'</button>';
+ }).join('');
+ var reqChips=rq.map(function(r){return '<li class="'+(S.help?cls(r.ok):'row-n')+'"><span>'+(S.help?glyph(r.ok)+' ':'• ')+r.msg.replace(/^Je klant wil /,'')+'</span></li>';}).join('');
+ var reqHead=rq.map(function(r){return r.ok===false?'':'';}).join('');
+ var verdict='';
+ if(S.v){
+  if(S.v.kind==='missing')verdict='<div class="verdict" role="alert"><b>Je bent nog niet klaar.</b><ul><li>Kies nog: '+S.v.items.join(', ')+'.</li></ul></div>';
+  else verdict='<div class="verdict" role="alert"><b>Dit klopt nog niet ('+S.v.items.length+')</b><ul>'+S.v.items.map(function(i){return '<li><b>'+i.t+':</b> '+i.m+'</li>';}).join('')+'</ul></div>';
+ }
+ var buildList=CATS.map(function(c){var x=p[c.id];return '<li><span><a href="#" data-a="cat" data-id="'+c.id+'" style="color:inherit">'+c.label+'</a>: '+(x?x.name:'<span class="muted">nog niet gekozen</span>')+'</span><span class="price">'+(x?euro(x.price):'')+'</span></li>';}).join('');
+ var checks=S.help?'<div class="card"><h3>Compatibiliteit</h3><ul class="checks">'+ck.map(function(r){return '<li class="'+cls(r.ok)+'"><span>'+glyph(r.ok)+'</span><span><b>'+r.label+'.</b> <span class="'+(r.ok===false?'':'muted')+'">'+r.msg+'</span></span></li>';}).join('')+'</ul></div>':'<div class="card"><p class="tip" style="margin:0">Hulp staat uit. Als je op “Controleer en bouw” drukt, hoor je wat niet klopt.</p></div>';
+ var main=
+  '<div class="brief-card"><p class="kicker mono">Opdracht · '+b.klant+'</p><p class="q">“'+b.tekst+'”</p><ul class="list">'+reqChips+'</ul></div>'+
+  verdict+
+  '<div class="tabs">'+tabs+'</div><p class="blurb">'+cat.blurb+'</p>'+
+  '<p class="small" style="margin:-6px 0 14px"><a class="back" href="posters.html#'+S.cat+'" target="_blank" rel="noopener">Bekijk de poster over '+cat.label.toLowerCase()+' →</a></p>'+
+  (S.cat==='psu'?'<p class="mono small" style="margin:-4px 0 14px"><b>Nu: '+power(p).load+' W verbruik · advies minimaal '+power(p).adv+' W</b></p>':'')+
+  '<div class="grid">'+opts+'</div>';
+ var side='<aside class="side"><div class="card"><h3>Budget</h3><div class="mono" style="font-size:22px">'+euro(t)+' <span class="muted small">van '+euro(b.budget)+'</span></div><div class="meter'+(over?' over':'')+'"><i style="width:'+Math.min(100,Math.round(t/b.budget*100))+'%"></i></div><span class="small '+(over?'bad':'muted')+'">'+(over?'Je zit '+euro(t-b.budget)+' boven budget.':'Nog '+euro(b.budget-t)+' over.')+'</span></div>'+
+  '<div class="card"><h3>Jouw build</h3><ul class="list">'+buildList+'</ul></div>'+powerCard(p)+checks+'</aside>';
+ var bar='<div class="bar"><div class="bar-in"><div class="bar-t"><span class="mono small muted">TOTAAL</span><strong class="mono'+(over?' bad':'')+'">'+euro(t)+'</strong><span class="muted small">van '+euro(b.budget)+'</span></div><button class="btn" data-a="check" data-fk="check">Controleer en bouw</button></div></div>';
+ return shell('<div class="pick"><div style="min-width:0">'+main+'</div>'+side+'</div>'+bar,0);
+}
+
+/* ---------- montage: teksten ---------- */
+function info(id,p){
+ var I={
+  cpu:{t:'Processor plaatsen',
+   i:'Klap de hendel van het socket omhoog. Zoek het gouden driehoekje op de processor en op het socket: die twee horen op elkaar te liggen. '+(p.cpu.socket==='AM4'?'Bij AM4 zitten de pennen onder de processor zelf, pak hem alleen bij de randen vast.':'Bij dit socket zitten de pennen in het moederbord. Raak ze nooit aan.')+' Draai de processor tot hij goed ligt en plaats hem dan.',
+   s:'Hij ligt goed. Sluit de hendel zonder kracht: gaat dat zwaar, dan ligt de processor verkeerd.'},
+  ram:{t:'Geheugen plaatsen',
+   i:'Je hebt twee modules van '+(p.ram.gb/2)+' GB. Kies de twee sleuven waarmee het geheugen in dual channel werkt. Sleuf 1 is de sleuf het dichtst bij de processor.',
+   s:'Dual channel: twee kanalen werken tegelijk, dus bijna dubbele geheugensnelheid. Druk tot beide klemmetjes klikken.'},
+  ssd:{t:'SSD in de M.2-sleuf',
+   i:'Tik de handelingen in de goede volgorde aan. De M.2-sleuf zit direct op het bord, je hebt geen kabel nodig.',
+   s:'Klaar. Controleer dat het schroefje echt vastzit, anders komt de SSD los.'},
+  cooler:{t:'Koeler monteren',
+   i:p.cooler.box?'De koeler voert de warmte van de processor af. Warmte gaat alleen goed over als er geen lucht tussen koeler en processor zit.':'De koeler voert de warmte van de processor af. Tussen koeler en processor zit altijd een heel dun luchtlaagje, en lucht geleidt warmte slecht.',
+   s:p.cooler.box?'Klik of schroef de boxkoeler vast. De ventilator sluit je straks aan op CPU_FAN.':'Druk de koeler recht erop en draai de schroeven kruiselings aan. De ventilator sluit je straks aan op CPU_FAN.'},
+  standoffs:{t:'Kast voorbereiden',
+   i:'Het bord mag het metalen frame van de kast niet raken. Daarom komen er afstandshouders (standoffs) in het frame. Jouw bord is een '+p.board.ff+'-bord.',
+   s:'De standoffs staan op de plekken van jouw bord. Het bord ligt straks op afstand van het metaal.'},
+  mount:{t:'Moederbord in de kast',
+   i:'Tik de handelingen in de goede volgorde aan. Sommige borden hebben het I/O-schildje al ingebouwd, controleer dat altijd.',
+   s:'Het bord zit vast. Draai schroeven handvast aan: te strak kan de printplaat doen barsten.'},
+  psu:{t:'Voeding inbouwen',
+   i:'Je voeding is '+p.psu.w+' W. Hoe bouw je hem in?',
+   s:'Bij een modulaire voeding steek je alleen de kabels erin die je nodig hebt. Dat scheelt rommel en verbetert de luchtstroom.'},
+  gpu:{t:'Videokaart plaatsen',
+   i:'De videokaart is '+p.gpu.len+' mm lang en heeft veel bandbreedte nodig. Haal de slotbeugeltjes achter het slot weg en kies het slot waar hij in moet.',
+   s:'Je hoort een klik en het klepje springt dicht. Draai de kaart vast met schroefjes aan de achterkant van de kast.'},
+  cables:{t:'Kabels aansluiten',
+   i:'Kies een kabel en tik dan op de bijbehorende aansluiting op het bord.',
+   s:'Alle kabels zitten erin. Bundel ze met tie-wraps achter het bord voor betere luchtstroom.'},
+  boot:{t:'Aansluiten en opstarten',
+   i:'Alles zit erin. Tijd voor de eerste start.',
+   s:''}
+ };
+ return I[id];
+}
+function buildSteps(p){
+ var g=p.gpu.len>0;
+ var a=[
+  {id:'cpu',part:p.cpu.name,req:[]},
+  {id:'ram',part:p.ram.name,req:[]},
+  {id:'ssd',part:p.ssd.name,req:[]},
+  {id:'cooler',part:p.cooler.name,req:['cpu','ram','ssd'],why:'De koeler dekt het socket af en past vaak over de geheugen- en SSD-sleuven heen. Doe die eerst.'},
+  {id:'standoffs',part:p['case'].name,req:[]},
+  {id:'mount',part:p.board.name,req:['cpu','ram','ssd','cooler','standoffs'],why:'Processor, geheugen, SSD en koeler monteer je het makkelijkst terwijl het bord los op tafel ligt. En zonder standoffs raakt het bord het metaal van de kast.'},
+  {id:'psu',part:p.psu.name,req:[]}
+ ];
+ if(g)a.push({id:'gpu',part:p.gpu.name,req:['mount'],why:'Een videokaart past alleen in een bord dat al in de kast vastzit.'});
+ a.push({id:'cables',part:'Voedings- en frontpaneelkabels',req:['mount','psu'].concat(g?['gpu']:[]),why:'Kabels leg je als laatste. Eerst moet alles op zijn plek zitten, anders zit je steeds in de weg.'});
+ a.push({id:'boot',part:'Monitor en BIOS',req:['cables'],why:'Je kunt niet opstarten zolang er kabels ontbreken.'});
+ a.forEach(function(s){s.t=info(s.id,p).t;});
+ return a;
+}
+var ORD={
+ ssd:function(){return [
+  {t:'Schroefje en koellichaam van de M.2-sleuf halen',e:''},
+  {t:'De SSD schuin (± 30°) in de sleuf schuiven',e:'Het koellichaam zit nog op de sleuf. Haal eerst weg wat in de weg zit.'},
+  {t:'De SSD plat drukken en vastschroeven',e:'De SSD zit nog niet in de sleuf, dus er valt niets plat te drukken.'},
+  {t:'Het koellichaam terugplaatsen',e:'Het koellichaam kan pas terug als de SSD vastzit.'}];},
+ mount:function(){return [
+  {t:'Het I/O-schildje in de achterkant van de kast klikken',e:''},
+  {t:'Het bord schuin naar binnen schuiven, met de poorten voor het schildje langs',e:'Als het bord er al in zit, kom je niet meer bij de achterkant. Eerst het schildje.'},
+  {t:'Het bord vastzetten met schroeven (kruislings, niet te strak)',e:'Het bord ligt er nog niet. Eerst moeten de poorten door het schildje en de gaten boven de standoffs liggen.'}];}
+};
+var CH={
+ cooler:function(p){
+  if(p.cooler.box)return [{q:'De boxkoeler heeft al een laagje koelpasta onderop. Wat doe je?',y:'Goed. De pasta van de fabriek is er precies voor gemaakt.',o:[
+   {t:'Niets extra’s: de koeler recht erop zetten en vastmaken',ok:true},
+   {t:'Er extra koelpasta bij smeren',ok:false,w:'Dubbele pasta isoleert en geeft een rommel rond het socket.'},
+   {t:'De pasta eerst eraf vegen',ok:false,w:'De pasta van de fabriek is gemaakt voor deze koeler. Laat hem zitten.'}]}];
+  return [{q:'Hoeveel koelpasta breng je aan op de processor?',y:'Precies goed. De druk van de koeler spreidt de druppel zelf uit tot een dun, egaal laagje.',o:[
+   {t:'Een erwtgrote druppel in het midden',ok:true},
+   {t:'Een dun laagje over de héle processor smeren',ok:false,w:'Smeren geeft zelden een egaal laagje en luchtbelletjes. De koeler spreidt een druppel beter uit.'},
+   {t:'Zoveel mogelijk, dan koelt het beter',ok:false,w:'Te veel pasta isoleert en perst over de rand het socket in.'},
+   {t:'Geen pasta, de koeler is al vlak genoeg',ok:false,w:'Zonder pasta blijven er luchtspleetjes. Lucht geleidt warmte slecht, dus de processor wordt veel te heet.'}]}];
+ },
+ standoffs:function(p){return [{q:'Welke standoffs schroef je in het frame?',y:'Precies. Elke standoff staat onder een schroefgat van het bord, en er staat er geen waar het bord geen gat heeft.',o:[
+  {t:'Alleen op de plekken waar jouw '+p.board.ff+'-bord een schroefgat heeft',ok:true},
+  {t:'In alle gaatjes van het frame, dat is steviger',ok:false,w:'Een standoff op een plek zonder gat kan een printbaan raken en kortsluiting veroorzaken.'},
+  {t:'Geen: het bord kan rechtstreeks op het metaal',ok:false,w:'Het bord zou het metaal raken. Dat geeft kortsluiting.'}]}];},
+ psu:function(p){return [{q:'Je voeding is '+p.psu.w+' W. Hoe bouw je hem in?',y:'Goed. Alles blijft spanningsloos tot de pc klaar is.',o:[
+  {t:'Vastschroeven in de voedingsruimte. De stekker blijft uit het stopcontact.',ok:true},
+  {t:'Los onderin leggen, hij blijft er wel liggen',ok:false,w:'Een voeding weegt een paar kilo en trilt. Zonder schroeven schuift hij rond en trekt kabels los.'},
+  {t:'Eerst op het stopcontact aansluiten en testen',ok:false,w:'Werken in een pc onder spanning is gevaarlijk en kan onderdelen slopen. Alles uit, pas aan het einde aan.'}]}];},
+ boot:function(p){
+  var g=p.gpu.len>0;
+  return [
+   {q:'Je gaat opstarten. Waar steek je de monitorkabel in?',y:g?'Juist. Zo gebruikt hij de videokaart.':'Juist. Zonder losse videokaart komt het beeld uit het moederbord.',o:g?[
+    {t:'In de poort van de videokaart',ok:true},
+    {t:'In de poort van het moederbord',ok:false,w:'Bij een losse videokaart staat de poort van het moederbord meestal uit. Je krijgt dan een zwart scherm.'},
+    {t:'In een USB-poort',ok:false,w:'USB is geen beeldaansluiting.'}]:[
+    {t:'In de HDMI- of DisplayPort-poort van het moederbord',ok:true},
+    {t:'In een USB-poort',ok:false,w:'USB is geen beeldaansluiting.'},
+    {t:'Geen kabel nodig, beeld verschijnt vanzelf',ok:false,w:'Een monitor heeft altijd een beeldkabel nodig.'}]},
+   {q:'Het BIOS verschijnt. Je geheugen draait nog op basissnelheid. Wat doe je?',y:'Nu draait het geheugen op de snelheid waarvoor je hebt betaald.',o:[
+    {t:'Het XMP- of EXPO-profiel van het geheugen aanzetten',ok:true},
+    {t:'Niets, de basissnelheid is prima',ok:false,w:'Je betaalt voor snel geheugen maar gebruikt het niet op snelheid. Dat is zonde.'},
+    {t:'De processor handmatig overklokken op maximale spanning',ok:false,w:'Voor een beginner te riskant: te veel spanning kan de processor beschadigen.'}]}
+  ];
+ }
+};
+var CABLES=[
+ {id:'atx24',name:'24-pins hoofdvoeding',target:'de brede 24-pins aansluiting aan de rechterkant van het bord',col:'--c1'},
+ {id:'eps',name:'8-pins processorvoeding (EPS)',target:'de 8-pins CPU-aansluiting bovenaan het bord',col:'--c2'},
+ {id:'pcie',name:'PCIe-voeding (6+2 pins)',target:'de voedingsaansluiting op de videokaart',col:'--c3',gpu:true},
+ {id:'cpufan',name:'Koelerventilator',target:'de CPU_FAN-aansluiting vlak bij het socket',col:'--c4'},
+ {id:'usb3',name:'Front-USB 3.0',target:'de USB 3.0-aansluiting onderaan het bord',col:'--c5'},
+ {id:'audio',name:'Front-audio',target:'de AUDIO-aansluiting onderaan het bord',col:'--c6'},
+ {id:'fpanel',name:'Aan-knop en lampjes',target:'de F_PANEL-aansluiting onderaan het bord',col:'--c7'}
+];
+var PORTNAME={atx24:'de 24-pins hoofdvoeding',eps:'de 8-pins CPU-voeding',pcie:'de voedingsaansluiting van de videokaart',cpufan:'CPU_FAN',usb3:'de front-USB 3.0',audio:'de front-audio',fpanel:'F_PANEL (aan-knop en lampjes)'};
+
+/* ---------- tekening ---------- */
+function layout(p){
+ var atx=p.board.ff==='ATX',H=atx?360:288;
+ return {atx:atx,W:288,H:H,bx:24,by:18,psuY:18+H+14,VBW:336,VBH:18+H+14+54+18};
+}
+function portsOf(L,p){
+ var o={
+  eps:{x:196,y:8,w:34,h:14,lx:236,ly:19,a:'start',l:'CPU 8-pin'},
+  atx24:{x:268,y:190,w:14,h:64,lx:275,ly:266,a:'middle',l:'24-pin'},
+  cpufan:{x:106,y:148,w:24,h:10,lx:136,ly:157,a:'start',l:'CPU_FAN'},
+  usb3:{x:30,y:L.H-26,w:34,h:12,lx:30,ly:L.H-30,a:'start',l:'USB 3.0'},
+  audio:{x:78,y:L.H-26,w:26,h:12,lx:78,ly:L.H-30,a:'start',l:'AUDIO'},
+  fpanel:{x:118,y:L.H-26,w:44,h:12,lx:118,ly:L.H-30,a:'start',l:'F_PANEL'}
+ };
+ if(p.gpu.len){var cw=Math.round(p.gpu.len*0.62);o.pcie={x:22+cw-34,y:182,w:26,h:8,lx:22+cw-8,ly:179,a:'end',l:'GPU 8-pin'};}
+ return o;
+}
+function holesOf(L){
+ var cols=[12,144,276],rows=L.atx?[12,126,240,348]:[12,144,276],h=[];
+ rows.forEach(function(r){cols.forEach(function(c){h.push([L.bx+c,L.by+r]);});});
+ return h;
+}
+function scene(){
+ var A=S.A,p=S.picks,d=A.done,M=A.M,id=M?M.id:null,L=layout(p);
+ var mounted=!!d.mount;
+ var caseView=mounted||id==='standoffs'||id==='psu'||id==='mount';
+ var showBoard=mounted||id==='mount'||!caseView;
+ var hover=id==='mount'&&!mounted;
+ var s='<svg class="scene" viewBox="0 0 '+L.VBW+' '+L.VBH+'" role="img" aria-label="Bouwtekening van het moederbord en de kast">';
+ s+='<defs><pattern id="gr" width="12" height="12" patternUnits="userSpaceOnUse"><path d="M12 0H0V12" fill="none" class="sc-gridline" style="stroke:var(--grid)" stroke-width="1"/></pattern></defs>';
+ s+='<rect width="'+L.VBW+'" height="'+L.VBH+'" style="fill:var(--surface)"/><rect width="'+L.VBW+'" height="'+L.VBH+'" fill="url(#gr)"/>';
+ if(caseView){s+='<rect class="sc-case" x="6" y="4" width="'+(L.VBW-12)+'" height="'+(L.VBH-8)+'" rx="6"/>';s+='<text class="sc-t" x="14" y="'+(L.VBH-8)+'">KAST · ZIJPANEEL OPEN</text>';}
+ else s+='<text class="sc-t" x="14" y="'+(L.VBH-8)+'">ANTISTATISCHE MAT</text>';
+ var holes=holesOf(L);
+ if(caseView){
+  if(id==='standoffs'&&!d.standoffs)s+='<rect class="sc-foot" x="'+L.bx+'" y="'+L.by+'" width="'+L.W+'" height="'+L.H+'" rx="4"/>';
+  holes.forEach(function(h){s+=d.standoffs?'<circle class="sc-so" cx="'+h[0]+'" cy="'+h[1]+'" r="7"/><circle class="sc-sh" cx="'+h[0]+'" cy="'+h[1]+'" r="3"/>':'<circle class="sc-ring" cx="'+h[0]+'" cy="'+h[1]+'" r="6"/>';});
+ }
+ if(showBoard)s+='<g transform="translate('+L.bx+' '+L.by+')" opacity="'+(hover?'.55':'1')+'">'+boardSVG(p,d,M,L)+'</g>';
+ if(mounted)holes.forEach(function(h){s+='<circle class="sc-screw" cx="'+h[0]+'" cy="'+h[1]+'" r="3.6"/>';});
+ /* voeding */
+ if(caseView){
+  if(d.psu){
+   s+='<rect class="sc-psu" x="'+(L.bx+8)+'" y="'+L.psuY+'" width="210" height="54" rx="3"/><circle cx="'+(L.bx+190)+'" cy="'+(L.psuY+27)+'" r="18" class="sc-fan"/><circle cx="'+(L.bx+190)+'" cy="'+(L.psuY+27)+'" r="4" class="sc-hub"/>';
+   s+='<text class="sc-lab" x="'+(L.bx+20)+'" y="'+(L.psuY+22)+'">VOEDING</text><text class="sc-lab" x="'+(L.bx+20)+'" y="'+(L.psuY+38)+'" style="font-size:12px">'+p.psu.w+' W</text>';
+  } else if(id==='psu'){
+   s+='<rect class="target" x="'+(L.bx+8)+'" y="'+L.psuY+'" width="210" height="54" rx="3"/><text class="sc-t" x="'+(L.bx+20)+'" y="'+(L.psuY+31)+'">VOEDINGSRUIMTE</text>';
+  }
+ }
+ /* kabels */
+ if(mounted&&d.psu){
+  var P=portsOf(L,p),sx=L.bx+160,sy=L.psuY;
+  CABLES.forEach(function(c){
+   if(!A.cab[c.id]||!P[c.id])return;
+   var q=P[c.id],px=L.bx+q.x+q.w/2,py=L.by+q.y+q.h/2;
+   s+='<path class="sc-cable" style="stroke:var('+c.col+')" d="M'+sx+' '+sy+' C'+(sx-30)+' '+(sy-90)+' '+(px+40)+' '+(py+70)+' '+px+' '+py+'"/>';
+  });
+ }
+ /* hotspots */
+ if(id==='ram'){
+  for(var i=0;i<4;i++){var sel=M.sel.indexOf(i)>=0;s+='<rect class="hot'+(sel?' sel':'')+'" data-a="ramSlot" data-i="'+i+'" data-fk="h-ram-'+i+'" tabindex="0" role="button" aria-label="Geheugensleuf '+(i+1)+'" x="'+(L.bx+196+18*i-3)+'" y="'+(L.by+37)+'" width="18" height="146"/>';}
+ }
+ if(id==='gpu'){
+  slotsOf(L).forEach(function(sl,i){s+='<rect class="hot'+(M.sel===i?' sel':'')+'" data-a="pslot" data-i="'+i+'" data-fk="h-pcie-'+i+'" tabindex="0" role="button" aria-label="'+sl.n+'" x="'+(L.bx+sl.x-4)+'" y="'+(L.by+sl.y-5)+'" width="'+(sl.w+8)+'" height="20"/>';});
+ }
+ if(id==='cables'){
+  var PP=portsOf(L,p);
+  Object.keys(PP).forEach(function(k){var q=PP[k],dn=A.cab[k];
+   s+='<text class="sc-t" x="'+(L.bx+q.lx)+'" y="'+(L.by+q.ly)+'" text-anchor="'+q.a+'" style="fill:'+(dn?'var(--ok)':'var(--muted)')+'">'+q.l+'</text>';
+   if(!dn)s+='<rect class="hot" data-a="port" data-id="'+k+'" data-fk="h-port-'+k+'" tabindex="0" role="button" aria-label="'+PORTNAME[k]+'" x="'+(L.bx+q.x-4)+'" y="'+(L.by+q.y-4)+'" width="'+(q.w+8)+'" height="'+(q.h+8)+'"/>';
+  });
+ }
+ return s+'</svg>';
+}
+function slotsOf(L){
+ var a=[{x:30,y:196,w:160,n:'Slot 1, lange sleuf bovenaan'},{x:30,y:216,w:50,n:'Slot 2, korte sleuf'},{x:30,y:236,w:160,n:'Slot 3, lange sleuf onderaan'}];
+ if(L.atx)a.push({x:30,y:256,w:50,n:'Slot 4, korte sleuf onderaan'});
+ return a;
+}
+function boardSVG(p,d,M,L){
+ var id=M?M.id:null,s='';
+ s+='<rect class="sc-pcb" x="0" y="0" width="'+L.W+'" height="'+L.H+'" rx="4"/>';
+ s+='<rect class="sc-metal" x="0" y="24" width="28" height="92"/>';
+ for(var i=0;i<4;i++)s+='<rect class="sc-slot" x="5" y="'+(30+i*21)+'" width="18" height="14" rx="2"/>';
+ s+='<rect class="sc-metal" x="36" y="44" width="44" height="100" rx="3"/><rect class="sc-metal" x="86" y="10" width="96" height="26" rx="3"/>';
+ s+='<rect class="sc-sock" x="94" y="64" width="72" height="72" rx="3"/><path class="sc-gold" d="M98 68h12l-12 12z"/>';
+ s+='<rect class="sc-port" x="196" y="8" width="34" height="14"/><rect class="sc-port" x="106" y="148" width="24" height="10"/><rect class="sc-port" x="268" y="190" width="14" height="64"/>';
+ /* RAM */
+ for(var r=0;r<4;r++){
+  var on=(id==='ram'&&M.sel.indexOf(r)>=0);
+  s+='<rect class="sc-slot" x="'+(196+18*r)+'" y="40" width="12" height="140" rx="1" '+(on?'style="fill:var(--copper)"':'')+'/>';
+  s+='<text class="sc-t" x="'+(196+18*r+6)+'" y="34" text-anchor="middle">'+(r+1)+'</text>';
+ }
+ if(d.ram)[1,3].forEach(function(r){
+  s+='<rect class="sc-ram" x="'+(196+18*r)+'" y="40" width="12" height="140" rx="1"/>';
+  for(var k=0;k<4;k++)s+='<rect class="sc-chip" x="'+(198+18*r)+'" y="'+(52+k*30)+'" width="8" height="18"/>';
+ });
+ /* M.2 */
+ s+='<rect class="sc-slot" x="40" y="172" width="112" height="12"/>';
+ if(d.ssd||(id==='ssd'&&M.next>=2)){s+='<rect class="sc-ssd" x="44" y="170" width="100" height="16" rx="2"/><circle cx="148" cy="178" r="3" class="sc-screw"/>';}
+ else if(id==='ssd'&&M.next===1){s+='<rect class="sc-ssd" x="44" y="168" width="100" height="14" rx="2" transform="rotate(-6 44 176)"/>';}
+ /* PCIe */
+ slotsOf(L).forEach(function(sl,i){s+='<rect class="sc-slot" x="'+sl.x+'" y="'+sl.y+'" width="'+sl.w+'" height="10"/><text class="sc-num" x="14" y="'+(sl.y+9)+'">'+(i+1)+'</text>';});
+ s+='<rect class="sc-chipset" x="206" y="200" width="40" height="40" rx="3"/>';
+ var hy=L.H-26;
+ s+='<rect class="sc-port" x="30" y="'+hy+'" width="34" height="12"/><rect class="sc-port" x="78" y="'+hy+'" width="26" height="12"/><rect class="sc-port" x="118" y="'+hy+'" width="44" height="12"/><rect class="sc-port" x="176" y="'+hy+'" width="20" height="12"/>';
+ /* CPU */
+ if(d.cpu||id==='cpu'){
+  var rot=(id==='cpu'&&!d.cpu)?M.rot:0;
+  s+='<g transform="rotate('+rot+' 130 100)"><rect class="sc-cpu" x="103" y="73" width="54" height="54" rx="3"/><path class="sc-gold" d="M106 76h10l-10 10z"/><rect x="116" y="86" width="28" height="28" fill="none" stroke="var(--metal2)" stroke-width="1"/></g>';
+ }
+ /* koeler */
+ if(d.cooler){
+  var rr=p.cooler.box?38:46;
+  s+='<circle cx="130" cy="100" r="'+rr+'" class="sc-metal2"/><circle cx="130" cy="100" r="'+(rr-8)+'" class="sc-fan"/>';
+  for(var k2=0;k2<5;k2++)s+='<path class="sc-blade" d="M130 100q10-8 8-'+(rr-12)+'q-14 8-8 '+(rr-12)+'z" transform="rotate('+(k2*72)+' 130 100)"/>';
+  s+='<circle cx="130" cy="100" r="5" class="sc-hub"/>';
+ }
+ /* videokaart */
+ if(d.gpu){
+  var cw=Math.round(p.gpu.len*0.62),n=cw>170?3:2;
+  s+='<rect class="sc-gpu" x="22" y="186" width="'+cw+'" height="44" rx="3"/>';
+  for(var f=0;f<n;f++)s+='<circle class="sc-gfan" cx="'+(22+cw/(n*2)+f*(cw/n))+'" cy="208" r="15"/>';
+  s+='<rect class="sc-port" x="'+(22+cw-34)+'" y="182" width="26" height="8"/>';
+ }
+ if(id==='gpu'&&!d.gpu){}
+ return s;
+}
+
+/* ---------- montage: scherm ---------- */
+function viewBuild(){
+ var A=S.A,p=S.picks;
+ var body;
+ if(A.finished)body=panelFinish();
+ else if(A.M)body=panelMini();
+ else body=panelPick();
+ return shell('<div class="build"><div class="scenebox">'+scene()+'</div><div class="panel">'+body+'</div></div>',1);
+}
+function msgBox(){var m=S.A.msg;return '<div class="msgbox" aria-live="polite">'+(m?'<div class="msg '+m.kind+'">'+m.text+'</div>':'')+'</div>';}
+function head(extra){
+ var A=S.A,n=A.steps.length,k=A.steps.filter(function(s){return A.done[s.id];}).length;
+ return '<p class="kicker mono">Stap '+Math.min(k+1,n)+' van '+n+' · foutjes: '+A.mistakes+'</p>';
+}
+function panelPick(){
+ var A=S.A;
+ var rest=A.shuf.filter(function(id){return !A.done[id];}).map(function(id){return A.steps.filter(function(s){return s.id===id;})[0];});
+ var done=A.steps.filter(function(s){return A.done[s.id];});
+ return head()+'<h2>Wat bouw je nu?</h2>'+
+  '<p class="tip">Een pc bouw je in drie rondes: eerst op het bord (buiten de kast), dan in de kast, en als laatste de kabels. Kies wat nu aan de beurt is.</p>'+msgBox()+
+  '<div class="stepgrid">'+rest.map(function(s){return '<button class="stepbtn" data-a="step" data-id="'+s.id+'" data-fk="s-'+s.id+'"><b>'+s.t+'</b><span>'+s.part+'</span></button>';}).join('')+'</div>'+
+  (done.length?'<p class="kicker mono" style="margin-top:16px">Klaar</p><div class="done-list">'+done.map(function(s){return '<span class="chip">✓ '+s.t+'</span>';}).join('')+'</div>':'');
+}
+function panelMini(){
+ var A=S.A,M=A.M,p=S.picks,inf=info(M.id,p);
+ var h=head()+'<h2>'+inf.t+'</h2><p>'+inf.i+'</p>';
+ var c='';
+ if(M.id==='cpu'){
+  c='<div class="act"><button class="btn ghost" data-a="rot" data-fk="rot">↻ Draai 90°</button><button class="btn" data-a="cpuPlace" data-fk="place">Plaats processor</button></div>';
+ } else if(M.id==='ram'){
+  c='<p class="tip">Tik op twee sleuven in de tekening. Geselecteerd: '+(M.sel.length?M.sel.map(function(i){return 'sleuf '+(i+1);}).join(' en '):'nog niets')+'.</p><div class="act"><button class="btn" data-a="ramPlace" data-fk="place"'+(M.sel.length===2?'':' disabled')+'>Druk de modules erin</button></div>';
+ } else if(M.id==='ssd'||M.id==='mount'){
+  c='<div class="optlist">'+M.perm.map(function(i){var it=M.items[i],dn=i<M.next;return '<button class="ordbtn'+(dn?' d':'')+'" data-a="ord" data-i="'+i+'" data-fk="ord-'+i+'"><span class="n">'+(dn?(i+1):'·')+'</span><span>'+it.t+'</span></button>';}).join('')+'</div>';
+ } else if(M.id==='gpu'){
+  var L=layout(p);
+  c='<div class="optlist">'+slotsOf(L).map(function(sl,i){return '<button class="choice" data-a="pslot" data-i="'+i+'" data-fk="ps-'+i+'" aria-pressed="'+(M.sel===i)+'" style="'+(M.sel===i?'border-color:var(--copper)':'')+'">'+sl.n+'</button>';}).join('')+'</div><div class="act"><button class="btn" data-a="gpuPlace" data-fk="place"'+(M.sel===null?' disabled':'')+'>Plaats videokaart</button></div>';
+ } else if(M.id==='cables'){
+  var list=CABLES.filter(function(x){return !x.gpu||p.gpu.len>0;});
+  c='<div class="optlist">'+list.map(function(x){var dn=A.cab[x.id];return '<button class="cab'+(dn?' d':'')+'" data-a="cab" data-id="'+x.id+'" data-fk="c-'+x.id+'" aria-pressed="'+(M.sel===x.id)+'"'+(dn?' disabled':'')+'><i style="background:var('+x.col+')"></i><span>'+(dn?'✓ ':'')+x.name+'</span></button>';}).join('')+'</div><p class="tip">Aangesloten: '+list.filter(function(x){return A.cab[x.id];}).length+' van '+list.length+'.</p>';
+ } else {
+  var q=M.qs[M.qi];
+  c='<p><b>'+q.q+'</b></p><div class="optlist">'+M.perms[M.qi].map(function(i){var o=q.o[i],tr=M.tried[M.qi+'-'+i];return '<button class="choice" data-a="ch" data-i="'+i+'" data-fk="ch-'+i+'"'+(tr?' disabled':'')+'>'+o.t+'</button>';}).join('')+'</div>';
+ }
+ return h+msgBox()+c;
+}
+function panelFinish(){
+ var p=S.picks,A=S.A;
+ var lines=['Even geduld...','','POST  .................... gestart',
+  'Processor  '+p.cpu.name+' ........ OK','Geheugen   '+p.ram.gb+' GB '+p.ram.type+' (dual channel) ... OK',
+  p.gpu.len?'Videokaart '+p.gpu.name+' ..... OK':'Graphics   ingebouwd in de processor ... OK',
+  'Opslag     '+p.ssd.name+' ....... OK','Koeling    CPU_FAN draait ....... OK','','Besturingssysteem laden...'];
+ return head().replace(/Stap.*?·/,'Klaar ·')+'<h2>Hij start op</h2>'+msgBox()+
+  '<div class="post" role="img" aria-label="Opstartscherm van de pc">'+lines.map(function(l,i){return '<span style="animation-delay:'+(i*0.35)+'s">'+(l===''?' ':l)+'</span>';}).join('')+'</div>'+
+  '<div class="act"><button class="btn" data-a="results" data-fk="res">Bekijk je uitslag</button></div>';
+}
+
+/* ---------- uitslag ---------- */
+function viewResult(){
+ var b=brief(),p=S.picks,t=total(p),A=S.A,f=S.final;
+ var rows=CATS.map(function(c){return '<tr><td>'+c.label+'</td><td>'+p[c.id].name+'</td><td>'+euro(p[c.id].price)+'</td></tr>';}).join('');
+ var badge=function(on,lbl,txt){return '<div class="badge'+(on?' on':'')+'"><span class="stars">'+(on?'★':'☆')+'</span><b>'+lbl+'</b><br><span class="small muted">'+txt+'</span></div>';};
+ return shell(
+  '<section><p class="kicker mono">Opdracht · '+b.naam+'</p><h1 style="font-size:clamp(40px,8vw,72px)">Je pc draait.</h1>'+
+  '<p class="lead">'+stars(f.n)+' · '+b.klant+' is blij met de build. Hij kostte '+euro(t)+' van '+euro(b.budget)+'.</p>'+
+  '<div class="res-grid">'+badge(true,'Gebouwd en opgestart','Alle stappen gedaan.')+badge(f.s2,'Slim gekozen','Onderdelen goed met hooguit 1 mislukte controle. Jij had '+S.attempts+'.')+badge(f.s3,'Netjes gemonteerd','Hooguit 2 foutjes bij de montage. Jij had '+A.mistakes+'.')+'</div>'+
+  '<div class="card"><div class="tbl-wrap"><table class="tbl"><tbody>'+rows+'<tr><td><b>Totaal</b></td><td></td><td><b>'+euro(t)+'</b></td></tr></tbody></table></div></div>'+
+  '<h2>Dit heb je geleerd</h2><ul class="learn">'+
+  '<li>Het socket bepaalt welke processor op welk moederbord past. Het geheugentype (DDR4 of DDR5) en het bordformaat (ATX of mATX) moeten ook kloppen.</li>'+
+  '<li>Voeding: processor + videokaart + 100 W, met 30% marge. Te zwak geeft crashes.</li>'+
+  '<li>Volgorde: eerst op het bord (processor, geheugen, SSD, koeler), dan in de kast, kabels als laatste.</li>'+
+  '<li>Gouden driehoekje op één lijn, een erwtgrote druppel pasta, geheugen in sleuf 2 en 4 voor dual channel.</li>'+
+  '<li>Het geheugentype bepaalt ook de prijs: bij het huidige RAM-tekort is een DDR4-build een stuk goedkoper dan DDR5.</li>'+
+  '<li>Zet na de eerste start het XMP- of EXPO-profiel aan in het BIOS.</li></ul>'+
+  '<div class="act"><button class="btn" data-a="start" data-id="'+b.id+'" data-fk="again">Dezelfde opdracht opnieuw</button><button class="btn ghost" data-a="home" data-fk="home">Andere opdracht</button></div></section>',2);
+}
+
+/* ---------- renderen ---------- */
+function render(top){
+ var fk=document.activeElement&&document.activeElement.dataset?document.activeElement.dataset.fk:null;
+ var h=S.screen==='start'?viewStart():S.screen==='pick'?viewPick():S.screen==='build'?viewBuild():viewResult();
+ app.innerHTML=h;
+ if(top)window.scrollTo(0,0);
+ if(fk){var e=app.querySelector('[data-fk="'+fk+'"]');if(e&&!e.disabled)e.focus({preventScroll:true});}
+}
+
+/* ---------- acties ---------- */
+function mistake(text){S.A.mistakes++;S.A.msg={kind:'bad',text:text};render();}
+function completeStep(id,text){
+ var A=S.A;A.done[id]=true;A.M=null;
+ A.msg={kind:'ok',text:text};
+ if(A.steps.every(function(s){return A.done[s.id];}))A.finished=true;
+ render(true);
+}
+function startBuild(){
+ var p=S.picks,steps=buildSteps(p);
+ S.A={steps:steps,done:{},M:null,msg:null,mistakes:0,finished:false,cab:{},shuf:shuffle(steps.map(function(s){return s.id;}))};
+ S.screen='build';render(true);
+}
+function initM(id){
+ var p=S.picks;
+ if(id==='cpu')return {id:id,rot:[90,180,270][Math.floor(Math.random()*3)]};
+ if(id==='ram')return {id:id,sel:[]};
+ if(id==='ssd'||id==='mount'){var it=ORD[id]();return {id:id,items:it,perm:shuffle(it.map(function(x,i){return i;})),next:0};}
+ if(id==='gpu')return {id:id,sel:null};
+ if(id==='cables')return {id:id,sel:null};
+ var qs=CH[id](p);return {id:id,qs:qs,qi:0,perms:qs.map(function(q){return shuffle(q.o.map(function(x,i){return i;}));}),tried:{}};
+}
+var act={
+ home:function(){S.screen='start';render(true);},
+ start:function(el){S.briefId=el.dataset.id;S.picks={};S.cat='cpu';S.attempts=0;S.v=null;S.A=null;S.screen='pick';render(true);},
+ cat:function(el,e){if(e)e.preventDefault();S.cat=el.dataset.id;render();},
+ pick:function(el){
+  var c=el.dataset.cat,o=PARTS[c].filter(function(x){return x.id===el.dataset.id;})[0];
+  if(S.picks[c]&&S.picks[c].id===o.id)delete S.picks[c];else S.picks[c]=o;
+  S.v=null;render();
+ },
+ check:function(){
+  var p=S.picks,b=brief(),miss=CATS.filter(function(c){return !p[c.id];});
+  if(miss.length){S.v={kind:'missing',items:miss.map(function(c){return c.label.toLowerCase();})};render();window.scrollTo(0,0);return;}
+  var items=[];
+  compat(p).forEach(function(r){if(r.ok===false)items.push({t:r.label,m:r.msg});});
+  reqs(p,b).forEach(function(r){if(r.ok===false)items.push({t:'Opdracht',m:r.msg});});
+  var t=total(p);if(t>b.budget)items.push({t:'Budget',m:'Je zit '+euro(t-b.budget)+' boven het budget van '+euro(b.budget)+'.'});
+  if(items.length){S.attempts++;S.v={kind:'bad',items:items};render();window.scrollTo(0,0);return;}
+  S.v=null;startBuild();
+ },
+ step:function(el){
+  var A=S.A,id=el.dataset.id,st=A.steps.filter(function(s){return s.id===id;})[0];
+  var miss=st.req.filter(function(r){return !A.done[r];});
+  if(miss.length){
+   var names=miss.map(function(r){return A.steps.filter(function(s){return s.id===r;})[0].t.toLowerCase();});
+   mistake(st.why+' Eerst nog: '+names.join(', ')+'.');return;
+  }
+  A.msg=null;A.M=initM(id);render(true);
+ },
+ rot:function(){S.A.M.rot=(S.A.M.rot+90)%360;render();},
+ cpuPlace:function(){
+  var M=S.A.M;
+  if(M.rot!==0){mistake('Het driehoekje ligt niet op het driehoekje van het socket. Niet forceren: zo buig je pennen en is de processor of het bord kapot. Draai hem eerst goed.');return;}
+  completeStep('cpu',info('cpu',S.picks).s);
+ },
+ ramSlot:function(el){
+  var M=S.A.M,i=+el.dataset.i,k=M.sel.indexOf(i);
+  if(k>=0)M.sel.splice(k,1);else if(M.sel.length<2)M.sel.push(i);
+  render();
+ },
+ ramPlace:function(){
+  var M=S.A.M,s=M.sel.slice().sort().join();
+  if(s==='1,3'){completeStep('ram',info('ram',S.picks).s);return;}
+  if(s==='0,1'||s==='2,3')mistake('Die twee sleuven zitten op hetzelfde kanaal. Dan werkt het geheugen op één kanaal (single channel) en is het veel trager.');
+  else mistake('Dat werkt misschien, maar de handleiding adviseert sleuf 2 en 4 (tel vanaf de processor) voor dual channel.');
+  M.sel=[];render();
+ },
+ ord:function(el){
+  var M=S.A.M,i=+el.dataset.i;
+  if(i<M.next)return;
+  if(i===M.next){
+   M.next++;
+   if(M.next>=M.items.length){completeStep(M.id,info(M.id,S.picks).s);return;}
+   render();return;
+  }
+  mistake(M.items[i].e);
+ },
+ ch:function(el){
+  var M=S.A.M,i=+el.dataset.i,q=M.qs[M.qi],o=q.o[i];
+  if(!o.ok){M.tried[M.qi+'-'+i]=true;mistake(o.w);return;}
+  if(M.qi<M.qs.length-1){M.qi++;S.A.msg={kind:'ok',text:q.y};render();return;}
+  completeStep(M.id,q.y+(info(M.id,S.picks).s?' '+info(M.id,S.picks).s:''));
+ },
+ pslot:function(el){S.A.M.sel=+el.dataset.i;render();},
+ gpuPlace:function(){
+  var M=S.A.M,p=S.picks;
+  if(M.sel===0){completeStep('gpu',info('gpu',p).s);return;}
+  var L=layout(p),m;
+  if(M.sel===2)m='Dat slot is wel lang, maar het loopt via de chipset en werkt maar met een kwart van de banen (x4). De videokaart zou veel trager zijn. Gebruik het bovenste lange slot, dat zit rechtstreeks op de processor.';
+  else m='Dat is een korte x1-sleuf. Daar past een videokaart niet in en hij zou te weinig bandbreedte hebben.';
+  M.sel=null;mistake(m);
+ },
+ cab:function(el){S.A.M.sel=el.dataset.id;render();},
+ port:function(el){
+  var A=S.A,M=A.M,k=el.dataset.id;
+  if(!M.sel){A.msg={kind:'bad',text:'Kies eerst een kabel in de lijst.'};render();return;}
+  var cab=CABLES.filter(function(c){return c.id===M.sel;})[0];
+  if(cab.id===k){
+   A.cab[k]=true;M.sel=null;
+   var left=CABLES.filter(function(c){return (!c.gpu||S.picks.gpu.len>0)&&!A.cab[c.id];});
+   if(!left.length){completeStep('cables',info('cables',S.picks).s);return;}
+   A.msg={kind:'ok',text:'Klik. '+cab.name+' zit erin.'};render();return;
+  }
+  var extra=((cab.id==='eps'&&k==='pcie')||(cab.id==='pcie'&&k==='eps'))?' Let op: EPS (processor) en PCIe (videokaart) lijken op elkaar maar mogen nooit verwisseld worden.':'';
+  M.sel=null;mistake('Dat is '+PORTNAME[k]+'. De kabel “'+cab.name.toLowerCase()+'” hoort bij '+cab.target+'.'+extra);
+ },
+ results:function(){
+  var p=S.picks,A=S.A;
+  var s2=S.attempts<=1,s3=A.mistakes<=2,n=1+(s2?1:0)+(s3?1:0);
+  S.final={s2:s2,s3:s3,n:n};saveBest(S.briefId,n);S.screen='result';render(true);
+ }
+};
+var MINI=['rot','cpuPlace','ramSlot','ramPlace','ord','ch','pslot','gpuPlace','cab','port'];
+document.addEventListener('click',function(e){
+ var el=e.target.closest?e.target.closest('[data-a]'):null;
+ if(!el||!app.contains(el))return;
+ var a=el.dataset.a;
+ if(MINI.indexOf(a)>=0&&!(S.A&&S.A.M))return;
+ var f=act[a];if(f)f(el,e);
+});
+document.addEventListener('keydown',function(e){
+ if((e.key==='Enter'||e.key===' ')&&e.target&&e.target.getAttribute&&e.target.getAttribute('role')==='button'&&e.target.namespaceURI==='http://www.w3.org/2000/svg'){
+  e.preventDefault();var a2=e.target.dataset.a;
+  if(MINI.indexOf(a2)>=0&&!(S.A&&S.A.M))return;
+  var f=act[a2];if(f)f(e.target,e);
+ }
+});
+document.addEventListener('change',function(e){
+ if(e.target&&e.target.id==='help'){S.help=e.target.checked;}
+});
+render();
+})();
+</script>

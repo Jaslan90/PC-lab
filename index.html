@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="nl">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>ICT-lessen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+/* Concept: het prikbord van het ICT-lokaal op ruitjespapier. Elke les is een kaart. Koper is de enige accentkleur. */
+:root{
+  --bg:#e8eee7; --grid:#d0dcd2; --surface:#f5f8f3; --ink:#15221c; --muted:#556860; --line:#b4c4b8;
+  --copper:#b85a22; --on-copper:#ffffff; --ok:#1d7447;
+  --pcb:#1f5e4a; --pcb-d:#143f31; --metal:#aab5ae; --metal2:#8d9a93; --slot:#0f1d18; --gold:#d6a62c; --cpu:#c9d2cc; --ram:#2f6aa8;
+  --disp:'Big Shoulders Display','Arial Narrow',Impact,sans-serif;
+  --body:'Instrument Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111b17; --grid:#1a2a24; --surface:#192520; --ink:#e4eee8; --muted:#8fa69b; --line:#2f433a;
+    --copper:#e58f55; --on-copper:#1b110a; --ok:#58c88c;
+    --pcb:#2f7d64; --pcb-d:#1f5646; --metal:#6d7b74; --metal2:#55645d; --slot:#070d0b; --gold:#e4b94d; --cpu:#aab6af; --ram:#5b9ae0;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111b17; --grid:#1a2a24; --surface:#192520; --ink:#e4eee8; --muted:#8fa69b; --line:#2f433a;
+  --copper:#e58f55; --on-copper:#1b110a; --ok:#58c88c;
+  --pcb:#2f7d64; --pcb-d:#1f5646; --metal:#6d7b74; --metal2:#55645d; --slot:#070d0b; --gold:#e4b94d; --cpu:#aab6af; --ram:#5b9ae0;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background-color:var(--bg);color:var(--ink);font:400 16px/1.5 var(--body);
+  padding-inline:16px;padding-block:0 48px;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;
+}
+:focus-visible{outline:3px solid var(--copper);outline-offset:3px}
+.wrap{max-width:1040px;margin-inline:auto}
+.top{padding-block:20px;display:flex;justify-content:space-between;align-items:baseline;gap:8px 24px;flex-wrap:wrap}
+.brand{font-family:var(--disp);font-weight:800;font-size:26px;letter-spacing:.06em;text-transform:uppercase}
+.brand span{color:var(--copper)}
+.meta{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--disp);font-weight:800;text-transform:uppercase;font-size:clamp(46px,9vw,88px);line-height:.92;margin:8px 0 16px;text-wrap:balance}
+h2{font-family:var(--disp);font-weight:700;text-transform:uppercase;font-size:28px;letter-spacing:.02em;line-height:1.05;margin:0 0 6px;text-wrap:balance}
+p{margin:0 0 12px}
+.lead{font-size:18px;max-width:56ch;margin-bottom:28px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:24px;align-items:start}
+@media (max-width:860px){.layout{grid-template-columns:minmax(0,1fr)}}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:16px}
+.side{background:var(--surface);border:1.5px solid var(--ink);padding:16px;min-width:0}
+@media (min-width:861px){.side{position:sticky;top:16px}}
+.small{font-size:14px;color:var(--muted)}
+.plist{display:grid;gap:6px;margin-block:12px}
+.plist a{display:block;padding:8px 12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);text-decoration:none;font-weight:500;min-height:40px;border-radius:3px}
+.plist a:hover{border-color:var(--copper)}
+.all{display:inline-block;font-weight:600;color:var(--copper);text-decoration:none;border-bottom:1.5px solid var(--copper)}
+.lesson{display:flex;flex-direction:column;gap:12px;min-width:0;background:var(--surface);border:1.5px solid var(--ink);padding:16px;color:inherit;text-decoration:none}
+a.lesson:hover{border-color:var(--copper);box-shadow:inset 0 0 0 1px var(--copper)}
+.lesson.empty{border-style:dashed;border-color:var(--line);color:var(--muted);justify-content:center;min-height:200px}
+.art{display:block;width:100%;height:132px;background:var(--bg);border:1px solid var(--line)}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-family:var(--mono);font-size:12px;padding:2px 7px;border:1px solid var(--line);background:var(--bg);white-space:nowrap}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:auto;padding-top:4px}
+.prog{font-size:14px;color:var(--muted)}
+.prog.on{color:var(--ok);font-weight:600}
+.go{font-weight:600;color:var(--copper)}
+.note{margin-top:32px;font-size:13px;color:var(--muted);max-width:64ch}
+</style>
+
+<div class="wrap">
+  <header class="top"><div class="brand">ICT <span>lessen</span></div><div class="meta">Zelfstandig werken</div></header>
+  <h1>Kies een opdracht.</h1>
+  <p class="lead">Elke les is een opdracht die je zelf uitvoert, in je eigen tempo. Je ziet direct wat goed gaat en wat niet.</p>
+  <div class="layout">
+    <main><div class="grid" id="lessons"></div></main>
+    <aside class="side" aria-labelledby="sidehead">
+      <h2 id="sidehead">Onderdelen-posters</h2>
+      <p class="small">Hoe werkt een processor, wat doet een voeding? Lees het na op de posters.</p>
+      <nav class="plist" id="plist" aria-label="Posters"></nav>
+      <a class="all" href="posters.html">Alle posters →</a>
+    </aside>
+  </div>
+  <p class="note">Je voortgang wordt bewaard in deze browser op deze laptop. Gebruik je een andere laptop of browser, dan begin je opnieuw.</p>
+</div>
+
+<script>
+(function(){
+'use strict';
+/* Een les toevoegen: zet een nieuw object in deze lijst en zet het HTML-bestand van de les naast dit bestand.
+   Velden: href (bestand), thema, titel, tekst, chips (lijst), art (tekening), voortgang (optionele functie). */
+var ART={
+ pc:'<svg class="art" viewBox="0 0 300 132" role="img" aria-label="Moederbord met processor"><rect x="6" y="6" width="288" height="120" rx="4" fill="var(--pcb)" stroke="var(--pcb-d)" stroke-width="2"/>'+
+  '<rect x="26" y="22" width="52" height="88" rx="3" fill="var(--metal)"/><rect x="96" y="30" width="72" height="72" rx="3" fill="var(--slot)" stroke="var(--metal2)" stroke-width="2"/>'+
+  '<rect x="104" y="38" width="56" height="56" rx="3" fill="var(--cpu)" stroke="var(--metal2)" stroke-width="1.5"/><path d="M107 41h12l-12 12z" fill="var(--gold)"/>'+
+  '<rect x="118" y="52" width="28" height="28" fill="none" stroke="var(--metal2)" stroke-width="1"/>'+
+  '<rect x="196" y="20" width="9" height="92" rx="1" fill="var(--slot)"/><rect x="210" y="20" width="9" height="92" rx="1" fill="var(--ram)"/>'+
+  '<rect x="224" y="20" width="9" height="92" rx="1" fill="var(--slot)"/><rect x="238" y="20" width="9" height="92" rx="1" fill="var(--ram)"/>'+
+  '<rect x="26" y="114" width="90" height="6" fill="var(--slot)"/></svg>'
+};
+function pcVoortgang(){
+ var b={};try{b=JSON.parse(localStorage.getItem('pc-bouwlab-beste'))||{};}catch(e){}
+ var n=Object.keys(b).filter(function(k){return b[k]>0;}).length;
+ return n?{on:true,t:n+' van 3 opdrachten gebouwd'}:{on:false,t:'Nog niet gestart'};
+}
+var LESSONS=[
+ {href:'pc-bouwlab.html',thema:'Hardware',titel:'PC Bouwlab',
+  tekst:'Een klant heeft een budget. Kies onderdelen die bij elkaar passen en bouw de pc daarna stap voor stap in elkaar, tot het eerste opstartscherm.',
+  chips:['3 opdrachten','Compatibiliteit','Montage'],art:'pc',voortgang:pcVoortgang}
+];
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+var h=LESSONS.map(function(l){
+ var p=l.voortgang?l.voortgang():null;
+ return '<a class="lesson" href="'+l.href+'">'+ART[l.art]+
+  '<p class="kicker">'+esc(l.thema)+'</p><div><h2>'+esc(l.titel)+'</h2><p>'+esc(l.tekst)+'</p></div>'+
+  '<div class="chips">'+l.chips.map(function(c){return '<span class="chip">'+esc(c)+'</span>';}).join('')+'</div>'+
+  '<div class="foot"><span class="prog'+(p&&p.on?' on':'')+'">'+(p?esc(p.t):'')+'</span><span class="go">Start →</span></div></a>';
+}).join('');
+h+='<div class="lesson empty" aria-hidden="true"><p class="kicker">Volgende les</p><h2>Hier komt een nieuwe opdracht</h2></div>';
+document.getElementById('lessons').innerHTML=h;
+var POSTERS=[['cpu','Processor'],['board','Moederbord'],['ram','Geheugen'],['gpu','Videokaart'],['ssd','Opslag'],['cooler','Koeler'],['psu','Voeding'],['case','Kast']];
+document.getElementById('plist').innerHTML=POSTERS.map(function(x){return '<a href="posters.html#'+x[0]+'">'+x[1]+'</a>';}).join('');
+})();
+</script>
