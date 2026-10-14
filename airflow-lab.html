@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="nl">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Airflow-lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+/* Concept: doorsnede van een pc-kast op ruitjespapier. Blauw is koele lucht, rood is warme lucht, koper is het enige accent. */
+:root{
+  color-scheme:light;
+  --bg:#e8eee7; --grid:#d0dcd2; --surface:#f5f8f3; --ink:#15221c; --muted:#556860; --line:#b4c4b8;
+  --copper:#b85a22; --on-copper:#ffffff; --ok:#1d7447; --warn:#a56a10; --bad:#b0342a;
+  --cool:#2f6aa8; --hot:#c8432b;
+  --pcb:#1f5e4a; --metal:#aab5ae; --metal2:#8d9a93; --slot:#0f1d18; --gold:#d6a62c;
+  --gpu:#2c3531; --psu:#3a4742; --casef:#dde6dc; --case:#6a7b72; --cpu:#c9d2cc; --ram:#2f6aa8;
+  --disp:'Big Shoulders Display','Arial Narrow',Impact,sans-serif;
+  --body:'Instrument Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111b17; --grid:#1a2a24; --surface:#192520; --ink:#e4eee8; --muted:#8fa69b; --line:#2f433a;
+    --copper:#e58f55; --on-copper:#1b110a; --ok:#58c88c; --warn:#e3ab4c; --bad:#f0796c;
+    --cool:#5b9ae0; --hot:#f0796c;
+    --pcb:#2f7d64; --metal:#6d7b74; --metal2:#55645d; --slot:#070d0b; --gold:#e4b94d;
+    --gpu:#3a4640; --psu:#46544e; --casef:#14201b; --case:#4d6057; --cpu:#aab6af; --ram:#5b9ae0;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111b17; --grid:#1a2a24; --surface:#192520; --ink:#e4eee8; --muted:#8fa69b; --line:#2f433a;
+  --copper:#e58f55; --on-copper:#1b110a; --ok:#58c88c; --warn:#e3ab4c; --bad:#f0796c;
+  --cool:#5b9ae0; --hot:#f0796c;
+  --pcb:#2f7d64; --metal:#6d7b74; --metal2:#55645d; --slot:#070d0b; --gold:#e4b94d;
+  --gpu:#3a4640; --psu:#46544e; --casef:#14201b; --case:#4d6057; --cpu:#aab6af; --ram:#5b9ae0;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;
+  background-color:var(--bg);color:var(--ink);font:400 16px/1.5 var(--body);
+  padding-inline:16px;padding-block:0 56px;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;
+}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--copper);outline-offset:2px}
+.wrap{max-width:1100px;margin-inline:auto}
+.top{padding-block:18px;display:flex;justify-content:space-between;align-items:flex-end;gap:8px 24px;flex-wrap:wrap}
+.back{font-size:13px;color:var(--muted);text-decoration:none;border-bottom:1px solid var(--line)}
+.back:hover{color:var(--copper);border-color:var(--copper)}
+.brand{display:block;font-family:var(--disp);font-weight:800;font-size:26px;letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
+.brand span{color:var(--copper)}
+.links{display:flex;gap:14px;flex-wrap:wrap}
+h1{font-family:var(--disp);font-weight:800;text-transform:uppercase;font-size:clamp(28px,4vw,44px);line-height:.95;margin:0 0 8px;text-wrap:balance;overflow-wrap:anywhere}
+h2{font-family:var(--disp);font-weight:700;text-transform:uppercase;font-size:22px;letter-spacing:.02em;line-height:1.05;margin:0 0 8px}
+p{margin:0 0 10px}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.muted{color:var(--muted)}.small{font-size:14px}
+.game{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:900px){.game{grid-template-columns:minmax(0,1fr)}}
+.scenebox{background:var(--surface);border:1.5px solid var(--ink);min-width:0}
+.scene{display:block;width:100%;height:auto}
+.panel{background:var(--surface);border:1.5px solid var(--ink);padding:18px;min-width:0;display:grid;gap:16px}
+.levels{display:flex;gap:6px;flex-wrap:wrap}
+.lv{background:var(--bg);border:1.5px solid var(--line);padding:8px 12px;cursor:pointer;min-height:42px;border-radius:3px;text-align:left}
+.lv:hover{border-color:var(--ink)}
+.lv[aria-pressed="true"]{border-color:var(--ink);font-weight:600;box-shadow:inset 0 -3px 0 var(--copper)}
+.lv .st{color:var(--copper);letter-spacing:.1em;margin-left:6px}
+.how{margin:0;padding-left:18px;display:grid;gap:5px;font-size:14px}
+.count{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.count b{font-family:var(--mono);font-weight:500;font-size:18px}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:6px 14px;border:1.5px solid var(--ink);background:transparent;cursor:pointer;border-radius:3px;font-weight:500}
+.btn:hover{border-color:var(--copper);color:var(--copper)}
+.temps{display:grid;gap:12px}
+.temp{display:grid;gap:4px}
+.temp-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.deg{font-family:var(--mono);font-size:22px;font-weight:500}
+.tag{font-size:13px;font-weight:600;padding:1px 8px;border:1.5px solid currentColor;border-radius:3px}
+.tag.ok{color:var(--ok)}.tag.warn{color:var(--warn)}.tag.bad{color:var(--bad)}
+.meter{position:relative;height:10px;background:var(--line)}
+.meter i{display:block;height:100%;max-width:100%}
+.meter i.ok{background:var(--ok)}.meter i.warn{background:var(--warn)}.meter i.bad{background:var(--bad)}
+.meter b{position:absolute;top:-4px;bottom:-4px;width:3px;background:var(--ink);margin-left:-1px}
+.goals{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:14px}
+.goals li{display:grid;grid-template-columns:22px minmax(0,1fr);gap:6px}
+.goals .y{color:var(--ok)}.goals .n{color:var(--muted)}
+.stars{font-size:22px;letter-spacing:.12em;color:var(--copper)}
+.tips{display:grid;gap:8px}
+.tip{border-left:4px solid var(--line);background:var(--bg);padding:8px 12px;font-size:14px}
+.tip.bad{border-color:var(--bad)}.tip.ok{border-color:var(--ok)}.tip.warn{border-color:var(--warn)}
+.slot{cursor:pointer}
+.slot:focus{outline:none}
+.slot:focus-visible{outline:3px solid var(--copper);outline-offset:2px}
+.slot .ring{fill:var(--surface);fill-opacity:.6;stroke:var(--copper);stroke-width:2;stroke-dasharray:5 4}
+.slot:hover .ring,.slot:focus-visible .ring{fill:var(--copper);fill-opacity:.25;outline:none}
+.slot.blk{cursor:not-allowed}
+.sc-t{font-family:var(--mono);font-size:11px;fill:var(--muted);letter-spacing:.08em}
+.lab{fill:var(--surface);stroke:var(--ink);stroke-width:1}
+.labt{font-family:var(--mono);font-size:12px;fill:var(--ink)}
+.plus{font-family:var(--mono);font-size:22px;fill:var(--copper)}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div><a class="back" href="index.html">&larr; Alle ICT-lessen</a><span class="brand">Airflow<span>-lab</span></span></div>
+    <div class="links"><a class="back" href="posters.html#case" target="_blank" rel="noopener">Poster over de kast</a><a class="back" href="posters.html#cooler" target="_blank" rel="noopener">Poster over de koeler</a></div>
+  </header>
+  <div id="app"></div>
+</div>
+
+<script>
+(function(){
+'use strict';
+/* ---------- geometrie (coördinaten ten opzichte van de kast) ---------- */
+var X0=70,Y0=60,W=560,H=370,VBW=700,VBH=490;
+var WALL={
+ front:{n:[-1,0],name:'voorkant',good:'in'},
+ rear:{n:[1,0],name:'achterkant',good:'out'},
+ top:{n:[0,-1],name:'bovenkant',good:'out'},
+ bottom:{n:[0,1],name:'onderkant',good:'in'}
+};
+var SLOTS=[
+ {id:'F1',wall:'front',x:34,y:70,nm:'voorkant, boven'},
+ {id:'F2',wall:'front',x:34,y:160,nm:'voorkant, midden'},
+ {id:'F3',wall:'front',x:34,y:250,nm:'voorkant, onder'},
+ {id:'T1',wall:'top',x:190,y:34,nm:'bovenkant, links'},
+ {id:'T2',wall:'top',x:340,y:34,nm:'bovenkant, boven de processor'},
+ {id:'R1',wall:'rear',x:W-34,y:100,nm:'achterkant'},
+ {id:'B1',wall:'bottom',x:210,y:H-34,nm:'onderkant, links'},
+ {id:'B2',wall:'bottom',x:300,y:H-34,nm:'onderkant, onder de videokaart'}
+];
+var CPU={x:340,y:110};
+var GPU={x1:190,x2:400,y:215};
+var LEVELS=[
+ {id:'basis',naam:'Standaardkast',lvl:'Makkelijk',max:3,blocked:[],
+  tekst:'Een gewone kast met een open (gaas) voorkant. Je mag 3 ventilatoren gebruiken.',
+  cpu:{hot:110,cool:70,lim:82},gpu:{hot:112,cool:72,lim:84},r:70},
+ {id:'hete-gpu',naam:'Hete videokaart',lvl:'Gemiddeld',max:4,blocked:[],
+  tekst:'Een krachtige videokaart wordt erg warm. Je mag 4 ventilatoren gebruiken.',
+  cpu:{hot:112,cool:72,lim:74},gpu:{hot:126,cool:76,lim:77},r:70},
+ {id:'glas',naam:'Glazen voorkant',lvl:'Gevorderd',max:4,blocked:['F1','F2','F3'],
+  tekst:'De voorkant is dicht glas, dus hier kan geen lucht door. Je mag 4 ventilatoren gebruiken.',
+  cpu:{hot:112,cool:72,lim:74},gpu:{hot:120,cool:74,lim:75},r:70}
+];
+
+/* ---------- rekenmodel ---------- */
+function inward(s){var n=WALL[s.wall].n;return [-n[0],-n[1]];}
+function nearest(s,list){var b=null,bd=1e9;list.forEach(function(t){var d=Math.hypot(t.x-s.x,t.y-s.y);if(d<bd){bd=d;b=t;}});return b;}
+function bez(a,b){
+ var ia=inward(a),ib=inward(b),L=160;
+ return [[a.x,a.y],[a.x+ia[0]*L,a.y+ia[1]*L],[b.x+ib[0]*L,b.y+ib[1]*L],[b.x,b.y]];
+}
+function pt(c,t){var u=1-t;return [u*u*u*c[0][0]+3*u*u*t*c[1][0]+3*u*t*t*c[2][0]+t*t*t*c[3][0],u*u*u*c[0][1]+3*u*u*t*c[1][1]+3*u*t*t*c[2][1]+t*t*t*c[3][1]];}
+function dSeg(p){var x=Math.max(GPU.x1,Math.min(GPU.x2,p[0]));return Math.hypot(p[0]-x,p[1]-GPU.y);}
+function near(c){var dc=1e9,dg=1e9;for(var i=0;i<=24;i++){var p=pt(c,i/24);dc=Math.min(dc,Math.hypot(p[0]-CPU.x,p[1]-CPU.y));dg=Math.min(dg,dSeg(p));}return [dc,dg];}
+function evaluate(cfg,L){
+ var ins=[],outs=[];
+ SLOTS.forEach(function(s){if(cfg[s.id]==='in')ins.push(s);else if(cfg[s.id]==='out')outs.push(s);});
+ var I=ins.length,E=outs.length;
+ var wrongIn=ins.filter(function(s){return WALL[s.wall].good!=='in';});
+ var wrongOut=outs.filter(function(s){return WALL[s.wall].good!=='out';});
+ var cc=0,gc=0,paths=[];
+ var tp=E===0?0:Math.min(1,(E+0.6)/Math.max(I,1));
+ if(E>0)ins.forEach(function(s){
+  var t=nearest(s,outs),c=bez(s,t),d=near(c);
+  var w=(WALL[s.wall].good==='in'?1:0.4)*(WALL[t.wall].good==='out'?1:0.5);
+  cc+=tp*w*Math.max(0,1-d[0]/L.r);gc+=tp*w*Math.max(0,1-d[1]/L.r);
+  paths.push({from:s,to:t,c:c});
+ });
+ if(I===0&&E>0){cc=gc=0.1+0.1*Math.min(E,2);}
+ if(E===0&&I>0){cc=gc=0.08;}
+ cc=Math.min(1,cc);gc=Math.min(1,gc);
+ var ct=L.cpu.hot-(L.cpu.hot-L.cpu.cool)*cc,gt=L.gpu.hot-(L.gpu.hot-L.gpu.cool)*gc;
+ var s1=ct<=L.cpu.lim&&gt<=L.gpu.lim;
+ var s2=s1&&!wrongIn.length&&!wrongOut.length;
+ var diff=I-E;
+ var s3=s2&&(diff===0||diff===1);
+ return {I:I,E:E,wrongIn:wrongIn,wrongOut:wrongOut,paths:paths,cpuT:Math.round(ct),gpuT:Math.round(gt),cc:cc,gc:gc,s1:s1,s2:s2,s3:s3,stars:s3?3:s2?2:s1?1:0,diff:diff};
+}
+window.__AF={evaluate:evaluate,LEVELS:LEVELS,SLOTS:SLOTS};
+
+/* ---------- toestand ---------- */
+var KEY='airflow-lab-beste';
+function loadBest(){try{return JSON.parse(localStorage.getItem(KEY))||{};}catch(e){return {};}}
+function saveBest(id,n){try{var b=loadBest();if((b[id]||0)<n){b[id]=n;localStorage.setItem(KEY,JSON.stringify(b));}}catch(e){}}
+var S={lv:0,cfg:{},msg:null};
+var app=document.getElementById('app');
+function L(){return LEVELS[S.lv];}
+function count(){var n=0;for(var k in S.cfg)if(S.cfg[k])n++;return n;}
+function stars(n){var s='';for(var i=0;i<3;i++)s+=i<n?'★':'☆';return s;}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+function reduced(){try{return window.matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(e){return false;}}
+function css(v,f){try{var x=getComputedStyle(document.documentElement).getPropertyValue(v).trim();return x||f;}catch(e){return f;}}
+
+/* ---------- tekening ---------- */
+function A(x,y){return [X0+x,Y0+y];}
+function fanSVG(cx,cy){
+ var s='<rect x="'+(cx-28)+'" y="'+(cy-28)+'" width="56" height="56" rx="9" style="fill:var(--gpu);stroke:var(--metal2)" stroke-width="2"/><circle cx="'+cx+'" cy="'+cy+'" r="23" style="fill:var(--slot)"/>';
+ for(var b=0;b<7;b++)s+='<path d="M'+cx+' '+cy+'q10-7 8-21q-14 7-8 21z" style="fill:var(--metal)" transform="rotate('+(b*51)+' '+cx+' '+cy+')"/>';
+ return s+'<circle cx="'+cx+'" cy="'+cy+'" r="5" style="fill:var(--gold)"/>';
+}
+function arrow(x,y,dx,dy,len,color){
+ var x2=x+dx*len,y2=y+dy*len,px=-dy,py=dx,h=10;
+ return '<line x1="'+x+'" y1="'+y+'" x2="'+(x2-dx*h*0.6)+'" y2="'+(y2-dy*h*0.6)+'" style="stroke:'+color+'" stroke-width="5" stroke-linecap="round"/>'+
+  '<polygon points="'+x2+','+y2+' '+(x2-dx*h+px*7)+','+(y2-dy*h+py*7)+' '+(x2-dx*h-px*7)+','+(y2-dy*h-py*7)+'" style="fill:'+color+'"/>';
+}
+function pill(x,y,text,w){return '<rect class="lab" x="'+(x-w/2)+'" y="'+(y-12)+'" width="'+w+'" height="20" rx="3"/><text class="labt" x="'+x+'" y="'+(y+3)+'" text-anchor="middle">'+text+'</text>';}
+function heat(t,lim){var o=Math.max(0.06,Math.min(0.7,(t-67)/55));return o;}
+function scene(r){
+ var Lv=L(),s='<svg class="scene" viewBox="0 0 '+VBW+' '+VBH+'" role="img" aria-label="Doorsnede van een pc-kast met ventilatoren, processor, videokaart en voeding">';
+ s+='<defs>';
+ r.paths.forEach(function(p,i){
+  var a=A(p.c[0][0],p.c[0][1]),b=A(p.c[3][0],p.c[3][1]);
+  s+='<linearGradient id="g'+i+'" gradientUnits="userSpaceOnUse" x1="'+a[0]+'" y1="'+a[1]+'" x2="'+b[0]+'" y2="'+b[1]+'"><stop offset="0" style="stop-color:var(--cool)"/><stop offset="1" style="stop-color:var(--hot)"/></linearGradient>';
+ });
+ s+='</defs>';
+ /* kast */
+ s+='<rect x="'+X0+'" y="'+Y0+'" width="'+W+'" height="'+H+'" rx="8" style="fill:var(--casef);stroke:var(--case)" stroke-width="4"/>';
+ var blocked=Lv.blocked.length>0;
+ if(blocked){s+='<rect x="'+(X0-3)+'" y="'+(Y0+4)+'" width="10" height="'+(H-8)+'" style="fill:var(--cool);fill-opacity:.35;stroke:var(--cool)" stroke-width="1.5"/><text class="sc-t" transform="translate('+(X0-14)+' '+(Y0+H/2)+') rotate(-90)" text-anchor="middle">GLAS, DICHT</text>';}
+ else s+='<line x1="'+X0+'" y1="'+(Y0+8)+'" x2="'+X0+'" y2="'+(Y0+H-8)+'" style="stroke:var(--metal2)" stroke-width="8" stroke-dasharray="2 6"/>';
+ /* moederbord, ram */
+ var bp=A(120,26);
+ s+='<rect x="'+bp[0]+'" y="'+bp[1]+'" width="420" height="250" rx="4" style="fill:var(--pcb);fill-opacity:.35"/>';
+ for(var m=0;m<4;m++){var rp=A(410+m*8,56);s+='<rect x="'+rp[0]+'" y="'+rp[1]+'" width="5" height="88" style="fill:var(--ram)"/>';}
+ /* voeding */
+ var pp=A(340,292);
+ s+='<rect x="'+pp[0]+'" y="'+pp[1]+'" width="205" height="50" rx="4" style="fill:var(--psu);stroke:var(--ink)" stroke-width="1.5"/><text class="sc-t" x="'+(pp[0]+102)+'" y="'+(pp[1]+30)+'" text-anchor="middle" style="fill:#fff">VOEDING</text>';
+ /* hitte-gloed en componenten */
+ var c=A(CPU.x,CPU.y);
+ s+='<circle cx="'+c[0]+'" cy="'+c[1]+'" r="54" style="fill:var(--hot)" fill-opacity="'+heat(r.cpuT,Lv.cpu.lim).toFixed(2)+'"/>';
+ s+='<circle cx="'+c[0]+'" cy="'+c[1]+'" r="32" style="fill:var(--metal2);stroke:var(--ink)" stroke-width="1.5"/><rect x="'+(c[0]-14)+'" y="'+(c[1]-14)+'" width="28" height="28" rx="3" style="fill:var(--cpu)"/>';
+ var g1=A(GPU.x1,GPU.y-20),g2=A(GPU.x2,GPU.y);
+ s+='<rect x="'+(g1[0]-16)+'" y="'+(g1[1]-14)+'" width="'+(GPU.x2-GPU.x1+32)+'" height="68" rx="14" style="fill:var(--hot)" fill-opacity="'+heat(r.gpuT,Lv.gpu.lim).toFixed(2)+'"/>';
+ s+='<rect x="'+g1[0]+'" y="'+g1[1]+'" width="'+(GPU.x2-GPU.x1)+'" height="40" rx="5" style="fill:var(--gpu);stroke:var(--metal2)" stroke-width="2"/>';
+ [GPU.x1+55,GPU.x1+155].forEach(function(x){var q=A(x,GPU.y);s+='<circle cx="'+q[0]+'" cy="'+q[1]+'" r="14" style="fill:var(--slot);stroke:var(--metal2)"/><circle cx="'+q[0]+'" cy="'+q[1]+'" r="4" style="fill:var(--gold)"/>';});
+ /* luchtpaden */
+ r.paths.forEach(function(p,i){
+  var d='M'+(X0+p.c[0][0])+' '+(Y0+p.c[0][1])+' C'+(X0+p.c[1][0])+' '+(Y0+p.c[1][1])+' '+(X0+p.c[2][0])+' '+(Y0+p.c[2][1])+' '+(X0+p.c[3][0])+' '+(Y0+p.c[3][1]);
+  s+='<path d="'+d+'" fill="none" stroke="url(#g'+i+')" stroke-width="'+(p.w===undefined?7:7)+'" stroke-linecap="round" opacity=".45"/>';
+  if(!reduced()){
+   var cool=css('--cool','#2f6aa8'),hot=css('--hot','#c8432b');
+   for(var k=0;k<4;k++)s+='<circle r="4.5" fill="'+cool+'"><animateMotion dur="3.6s" begin="-'+(k*0.9).toFixed(1)+'s" repeatCount="indefinite" path="'+d+'"/><animate attributeName="fill" values="'+cool+';'+cool+';'+hot+'" keyTimes="0;0.45;1" dur="3.6s" begin="-'+(k*0.9).toFixed(1)+'s" repeatCount="indefinite"/></circle>';
+  }
+ });
+ /* temperatuurlabels */
+ var cl=A(CPU.x,CPU.y+52),gl=A(GPU.x1+105,GPU.y+34);
+ s+=pill(cl[0],cl[1],'CPU '+r.cpuT+'°C',92)+pill(gl[0],gl[1],'GPU '+r.gpuT+'°C',92);
+ /* plekken en ventilatoren */
+ SLOTS.forEach(function(sl){
+  var p=A(sl.x,sl.y),w=WALL[sl.wall],d=S.cfg[sl.id],blk=Lv.blocked.indexOf(sl.id)>=0;
+  var state=blk?'dicht, hier kan geen lucht door':d==='in'?'ventilator blaast naar binnen':d==='out'?'ventilator blaast naar buiten':'leeg';
+  s+='<g class="slot'+(blk?' blk':'')+'" data-a="slot" data-id="'+sl.id+'" data-fk="s-'+sl.id+'" tabindex="0" role="button" aria-label="Plek '+sl.nm+': '+state+'">';
+  if(blk){s+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="26" style="fill:none;stroke:var(--muted)" stroke-width="1.5" stroke-dasharray="3 4"/><path d="M'+(p[0]-10)+' '+(p[1]-10)+'l20 20m0-20l-20 20" style="stroke:var(--muted)" stroke-width="2"/>';}
+  else if(!d){s+='<circle class="ring" cx="'+p[0]+'" cy="'+p[1]+'" r="26"/><text class="plus" x="'+p[0]+'" y="'+(p[1]+8)+'" text-anchor="middle">+</text>';}
+  else{
+   s+=fanSVG(p[0],p[1]);
+   var wx=p[0]+w.n[0]*34,wy=p[1]+w.n[1]*34;
+   var ox=wx+w.n[0]*34,oy=wy+w.n[1]*34;
+   if(d==='in')s+=arrow(ox,oy,-w.n[0],-w.n[1],30,'var(--cool)');else s+=arrow(wx+w.n[0]*2,wy+w.n[1]*2,w.n[0],w.n[1],30,'var(--hot)');
+  }
+  s+='</g>';
+ });
+ /* wandlabels */
+ s+='<text class="sc-t" x="'+X0+'" y="'+(Y0+H+50)+'">VOORKANT</text><text class="sc-t" x="'+(X0+W)+'" y="'+(Y0+H+50)+'" text-anchor="end">ACHTERKANT</text>';
+ s+='<text class="sc-t" x="'+(X0+W/2)+'" y="'+(Y0+H+50)+'" text-anchor="middle">ONDERKANT</text><text class="sc-t" x="'+(X0+W)+'" y="22" text-anchor="end">BOVENKANT</text>';
+ return s+'</svg>';
+}
+
+/* ---------- uitleg bij de uitkomst ---------- */
+function tips(r){
+ var Lv=L(),t=[];
+ if(r.I===0&&r.E===0){t.push(['warn','Er is nog geen luchtstroom. Plaats minstens één ventilator die lucht naar binnen blaast en één die lucht naar buiten blaast.']);return t;}
+ if(r.E===0)t.push(['bad','Er is geen uitgang voor de warme lucht. De lucht blijft hangen en alles wordt heet.']);
+ if(r.I===0&&r.E>0)t.push(['bad','Er komt geen koele lucht binnen via een ventilator. De lucht wordt door kieren naar binnen gezogen, dat koelt weinig en trekt stof naar binnen.']);
+ r.wrongIn.forEach(function(s){t.push(['bad','Een ventilator aan de '+WALL[s.wall].name+' blaast naar binnen. Warme lucht stijgt en moet daar juist weg. Klik nog een keer om hem om te draaien.']);});
+ r.wrongOut.forEach(function(s){t.push(['bad','Een ventilator aan de '+WALL[s.wall].name+' blaast lucht naar buiten. Daar hoort koele lucht binnen te komen. Klik nog een keer om hem om te draaien.']);});
+ if(r.I>0&&r.E>0){
+  if(r.diff<0)t.push(['warn','Je hebt meer ventilatoren die lucht naar buiten blazen dan naar binnen. Dat geeft onderdruk: er wordt stof door kieren naar binnen gezogen.']);
+  else if(r.diff>1)t.push(['warn','Je blaast veel meer lucht naar binnen dan naar buiten. De lucht kan niet snel genoeg weg en de stroming wordt trager.']);
+  else if(r.diff===1)t.push(['ok','Iets meer lucht naar binnen dan naar buiten (lichte overdruk). Dat is ideaal: weinig stof.']);
+  else t.push(['ok','Evenveel lucht naar binnen als naar buiten. Dat is in balans.']);
+ }
+ if(r.cpuT>Lv.cpu.lim)t.push(['bad','De processor wordt te heet ('+r.cpuT+'°C, maximaal '+Lv.cpu.lim+'°C). Laat koele lucht langs de processor stromen, bijvoorbeeld met een uitlaat boven of achter de processor.']);
+ if(r.gpuT>Lv.gpu.lim)t.push(['bad','De videokaart krijgt te weinig koele lucht ('+r.gpuT+'°C, maximaal '+Lv.gpu.lim+'°C). Een ventilator aan de voorkant of onderkant, op de hoogte van de kaart, helpt.']);
+ if(r.s1&&r.s3)t.push(['ok','Alles klopt: koele lucht gaat aan de voorkant of onderkant naar binnen, warme lucht gaat achter of boven naar buiten.']);
+ else if(r.s1&&!r.s2)t.push(['warn','De temperatuur is goed, maar niet alle ventilatoren staan de goede kant op.']);
+ return t;
+}
+function tempBlock(label,t,lim){
+ var cls=t<=lim-10?'ok':t<=lim?'ok':t<=lim+10?'warn':'bad';
+ var txt=t<=lim-10?'Koel':t<=lim?'Goed':t<=lim+10?'Warm':'Te heet';
+ var pct=Math.max(0,Math.min(100,(t-55)/70*100)),lp=(lim-55)/70*100;
+ return '<div class="temp"><div class="temp-h"><span>'+label+'</span><span><span class="deg">'+t+'°C</span> <span class="tag '+cls+'">'+txt+'</span></span></div>'+
+  '<div class="meter" role="img" aria-label="'+label+' '+t+' graden, maximaal '+lim+'"><i class="'+cls+'" style="width:'+pct+'%"></i><b style="left:'+lp+'%"></b></div><span class="small muted">Streepje: maximaal '+lim+'°C</span></div>';
+}
+
+/* ---------- schermen ---------- */
+function render(){
+ var fk=document.activeElement&&document.activeElement.getAttribute?document.activeElement.getAttribute('data-fk'):null;
+ var Lv=L(),r=evaluate(S.cfg,Lv);
+ if(r.stars>0)saveBest(Lv.id,r.stars);
+ var best=loadBest();
+ var lvb=LEVELS.map(function(l,i){return '<button class="lv" data-a="level" data-i="'+i+'" data-fk="lv-'+i+'" aria-pressed="'+(i===S.lv)+'">'+(i+1)+'. '+l.naam+'<span class="st" aria-label="beste score">'+stars(best[l.id]||0)+'</span></button>';}).join('');
+ var tl=tips(r).map(function(x){return '<div class="tip '+x[0]+'">'+esc(x[1])+'</div>';}).join('');
+ var msg=S.msg?'<div class="tip warn" role="status">'+esc(S.msg)+'</div>':'';
+ var goal=function(ok,t){return '<li><span class="'+(ok?'y':'n')+'">'+(ok?'✓':'·')+'</span><span>'+t+'</span></li>';};
+ app.innerHTML=
+  '<div class="game"><div class="scenebox">'+scene(r)+'</div><div class="panel">'+
+  '<div><p class="kicker">Opdracht '+(S.lv+1)+' van '+LEVELS.length+' · '+Lv.lvl+'</p><h1>'+esc(Lv.naam)+'</h1><p>'+esc(Lv.tekst)+'</p></div>'+
+  '<div class="levels">'+lvb+'</div>'+
+  '<ol class="how"><li>Klik op een plek langs de kast: de ventilator blaast naar <b style="color:var(--cool)">binnen</b> (blauwe pijl).</li><li>Klik nog een keer: hij draait om en blaast naar <b style="color:var(--hot)">buiten</b> (rode pijl).</li><li>Klik een derde keer om hem weg te halen.</li></ol>'+
+  '<div class="count"><span>Ventilatoren: <b>'+count()+' van '+Lv.max+'</b></span><button class="btn" data-a="clear" data-fk="clear">Alles wissen</button></div>'+msg+
+  '<div class="temps">'+tempBlock('Processor',r.cpuT,Lv.cpu.lim)+tempBlock('Videokaart',r.gpuT,Lv.gpu.lim)+'</div>'+
+  '<div><h2>Score <span class="stars" aria-label="'+r.stars+' van 3 sterren">'+stars(r.stars)+'</span></h2><ul class="goals">'+
+   goal(r.s1,'Processor en videokaart blijven onder de maximumtemperatuur.')+
+   goal(r.s2,'Alle ventilatoren staan de goede kant op: koel naar binnen, warm naar buiten.')+
+   goal(r.s3,'Evenveel of iets meer lucht naar binnen dan naar buiten.')+'</ul></div>'+
+  '<div class="tips">'+tl+'</div>'+
+  '</div></div>';
+ if(fk){var e=app.querySelector('[data-fk="'+fk+'"]');if(e&&e.focus)e.focus({preventScroll:true});}
+}
+var act={
+ level:function(el){S.lv=+el.getAttribute('data-i');S.cfg={};S.msg=null;render();},
+ clear:function(){S.cfg={};S.msg=null;render();},
+ slot:function(el){
+  var id=el.getAttribute('data-id'),Lv=L();
+  if(Lv.blocked.indexOf(id)>=0){S.msg='Dit deel van de kast is dicht (glas). Hier kan geen lucht door.';render();return;}
+  var d=S.cfg[id];S.msg=null;
+  if(!d){
+   if(count()>=Lv.max){S.msg='Je hebt al '+Lv.max+' ventilatoren gebruikt. Haal er eerst een weg.';render();return;}
+   S.cfg[id]='in';
+  }else if(d==='in')S.cfg[id]='out';
+  else delete S.cfg[id];
+  render();
+ }
+};
+function fire(el,e){var f=act[el.getAttribute('data-a')];if(f)f(el,e);}
+document.addEventListener('click',function(e){var el=e.target.closest?e.target.closest('[data-a]'):null;if(el&&app.contains(el))fire(el,e);});
+document.addEventListener('keydown',function(e){
+ var t=e.target;
+ if((e.key==='Enter'||e.key===' ')&&t&&t.getAttribute&&t.getAttribute('role')==='button'&&t.getAttribute('data-a')){e.preventDefault();fire(t,e);}
+});
+try{window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',render);}catch(e){}
+render();
+})();
+</script>

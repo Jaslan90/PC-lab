@@ -11,7 +11,7 @@
 /* Concept: het prikbord van het ICT-lokaal op ruitjespapier. Elke les is een kaart. Koper is de enige accentkleur. */
 :root{
   --bg:#e8eee7; --grid:#d0dcd2; --surface:#f5f8f3; --ink:#15221c; --muted:#556860; --line:#b4c4b8;
-  --copper:#b85a22; --on-copper:#ffffff; --ok:#1d7447;
+  --copper:#b85a22; --on-copper:#ffffff; --ok:#1d7447; --cool:#2f6aa8; --hot:#c8432b;
   --pcb:#1f5e4a; --pcb-d:#143f31; --metal:#aab5ae; --metal2:#8d9a93; --slot:#0f1d18; --gold:#d6a62c; --cpu:#c9d2cc; --ram:#2f6aa8;
   --disp:'Big Shoulders Display','Arial Narrow',Impact,sans-serif;
   --body:'Instrument Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
@@ -20,14 +20,14 @@
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#111b17; --grid:#1a2a24; --surface:#192520; --ink:#e4eee8; --muted:#8fa69b; --line:#2f433a;
-    --copper:#e58f55; --on-copper:#1b110a; --ok:#58c88c;
+    --copper:#e58f55; --on-copper:#1b110a; --ok:#58c88c; --cool:#5b9ae0; --hot:#f0796c;
     --pcb:#2f7d64; --pcb-d:#1f5646; --metal:#6d7b74; --metal2:#55645d; --slot:#070d0b; --gold:#e4b94d; --cpu:#aab6af; --ram:#5b9ae0;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
   --bg:#111b17; --grid:#1a2a24; --surface:#192520; --ink:#e4eee8; --muted:#8fa69b; --line:#2f433a;
-  --copper:#e58f55; --on-copper:#1b110a; --ok:#58c88c;
+  --copper:#e58f55; --on-copper:#1b110a; --ok:#58c88c; --cool:#5b9ae0; --hot:#f0796c;
   --pcb:#2f7d64; --pcb-d:#1f5646; --metal:#6d7b74; --metal2:#55645d; --slot:#070d0b; --gold:#e4b94d; --cpu:#aab6af; --ram:#5b9ae0;
   color-scheme:dark;
 }
@@ -94,6 +94,12 @@ a.lesson:hover{border-color:var(--copper);box-shadow:inset 0 0 0 1px var(--coppe
 /* Een les toevoegen: zet een nieuw object in deze lijst en zet het HTML-bestand van de les naast dit bestand.
    Velden: href (bestand), thema, titel, tekst, chips (lijst), art (tekening), voortgang (optionele functie). */
 var ART={
+ air:'<svg class="art" viewBox="0 0 300 132" role="img" aria-label="Pc-kast met pijlen voor luchtstroom"><rect x="60" y="28" width="190" height="96" rx="6" fill="var(--surface)" stroke="var(--metal2)" stroke-width="3"/>'+
+  '<rect x="90" y="40" width="124" height="62" rx="3" fill="var(--pcb)" opacity=".4"/><circle cx="172" cy="62" r="14" fill="var(--metal2)"/><rect x="108" y="82" width="70" height="12" rx="3" fill="var(--slot)"/>'+
+  '<line x1="16" y1="76" x2="48" y2="76" stroke="var(--cool)" stroke-width="5" stroke-linecap="round"/><polygon points="46,67 58,76 46,85" fill="var(--cool)"/>'+
+  '<line x1="252" y1="48" x2="282" y2="48" stroke="var(--hot)" stroke-width="5" stroke-linecap="round"/><polygon points="278,39 292,48 278,57" fill="var(--hot)"/>'+
+  '<line x1="172" y1="26" x2="172" y2="12" stroke="var(--hot)" stroke-width="5" stroke-linecap="round"/><polygon points="163,16 172,4 181,16" fill="var(--hot)"/>'+
+  '<path d="M66 76C110 76 130 52 172 62C210 70 230 50 250 48" fill="none" stroke="var(--cool)" stroke-width="3" stroke-dasharray="5 5"/></svg>',
  pc:'<svg class="art" viewBox="0 0 300 132" role="img" aria-label="Moederbord met processor"><rect x="6" y="6" width="288" height="120" rx="4" fill="var(--pcb)" stroke="var(--pcb-d)" stroke-width="2"/>'+
   '<rect x="26" y="22" width="52" height="88" rx="3" fill="var(--metal)"/><rect x="96" y="30" width="72" height="72" rx="3" fill="var(--slot)" stroke="var(--metal2)" stroke-width="2"/>'+
   '<rect x="104" y="38" width="56" height="56" rx="3" fill="var(--cpu)" stroke="var(--metal2)" stroke-width="1.5"/><path d="M107 41h12l-12 12z" fill="var(--gold)"/>'+
@@ -107,10 +113,18 @@ function pcVoortgang(){
  var n=Object.keys(b).filter(function(k){return b[k]>0;}).length;
  return n?{on:true,t:n+' van 3 opdrachten gebouwd'}:{on:false,t:'Nog niet gestart'};
 }
+function airVoortgang(){
+ var b={};try{b=JSON.parse(localStorage.getItem('airflow-lab-beste'))||{};}catch(e){}
+ var n=Object.keys(b).filter(function(k){return b[k]>0;}).length;
+ return n?{on:true,t:n+' van 3 opdrachten gehaald'}:{on:false,t:'Nog niet gestart'};
+}
 var LESSONS=[
  {href:'pc-bouwlab.html',thema:'Hardware',titel:'PC Bouwlab',
   tekst:'Een klant heeft een budget. Kies onderdelen die bij elkaar passen en bouw de pc daarna stap voor stap in elkaar, tot het eerste opstartscherm.',
-  chips:['3 opdrachten','Compatibiliteit','Montage'],art:'pc',voortgang:pcVoortgang}
+  chips:['3 opdrachten','Compatibiliteit','Montage'],art:'pc',voortgang:pcVoortgang},
+ {href:'airflow-lab.html',thema:'Hardware',titel:'Airflow-lab',
+  tekst:'Plaats en draai de ventilatoren in een pc-kast, zodat koele lucht erin gaat en warme lucht eruit. Zie direct hoe warm de processor en de videokaart worden.',
+  chips:['3 opdrachten','Luchtstroom','Temperatuur'],art:'air',voortgang:airVoortgang}
 ];
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
 var h=LESSONS.map(function(l){

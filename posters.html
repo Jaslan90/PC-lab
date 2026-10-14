@@ -83,6 +83,8 @@ dd{margin:0;color:var(--muted)}
 .fouten li::before{content:"\2717";position:absolute;left:0;color:var(--bad)}
 .cta{display:inline-flex;align-items:center;min-height:44px;padding:8px 18px;background:var(--copper);color:var(--on-copper);font-weight:600;text-decoration:none;border-radius:3px}
 .cta:hover{filter:brightness(1.07)}
+.ctas{display:flex;gap:10px;flex-wrap:wrap}
+.cta.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
 .pager{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:18px}
 .pager a{color:var(--ink);font-weight:500;text-decoration:none;border-bottom:1.5px solid var(--line)}
 .pager a:hover{color:var(--copper);border-color:var(--copper)}
@@ -242,7 +244,7 @@ var P=[
  term:[['SSD','Opslag zonder bewegende delen.'],['HDD','Harde schijf met draaiende platen. Goedkoop, maar trager.'],['NVMe','Het snelle protocol van moderne SSD’s in een M.2-sleuf.'],['M.2','De vorm en aansluiting van de kleine SSD-stick.']],
  fout:['De SSD plat in de sleuf drukken. Eerst schuin inschuiven, dan plat drukken.','Het schroefje vergeten, waardoor de SSD omhoog komt.','De beschermfolie op het koelblokje laten zitten.']},
 
-{id:'cooler',naam:'Koeler',kort:'Voert de warmte af',
+{id:'cooler',extra:['airflow-lab.html','Test de luchtstroom in het Airflow-lab →'],naam:'Koeler',kort:'Voert de warmte af',
  wat:'Een processor wordt warm als hij rekent. De koeler neemt die warmte op en blaast hem weg. Wordt het te heet, dan gaat de processor langzamer werken.',
  deel:[['Koelplaat','Het vlakke deel dat op de processor ligt en de warmte opneemt.'],['Heatpipes','Holle koperen buizen die de warmte snel naar boven brengen.'],['Lamellen','Dunne aluminium plaatjes die de warmte aan de lucht afgeven.'],['Ventilator','Blaast lucht door de lamellen.'],['Koelpasta','Een dun laagje tussen processor en koelplaat. Het vult de kleine oneffenheden, want lucht geleidt warmte slecht.']],
  kies:['De koeler moet minstens zoveel watt aankunnen als de processor verbruikt.','Controleer de hoogte. De koeler moet onder het zijpaneel van de kast passen.','Controleer of de koeler bij het socket past.','Bij veel processors zit een boxkoeler in de doos.'],
@@ -256,7 +258,7 @@ var P=[
  term:[['Watt (W)','Hoeveel vermogen de voeding kan leveren.'],['Rendement','Hoeveel van de stroom echt bij de onderdelen aankomt.'],['80 PLUS','Een keurmerk voor rendement.'],['Modulair','De kabels kun je los aansluiten of weglaten.']],
  fout:['Een voeding kiezen die te weinig watt levert.','De 8-pins processorkabel en de PCIe-kabel verwisselen. Ze lijken op elkaar.','In de pc werken terwijl de stekker nog in het stopcontact zit.']},
 
-{id:'case',naam:'Kast',kort:'Beschermt en laat lucht stromen',
+{id:'case',extra:['airflow-lab.html','Test de luchtstroom in het Airflow-lab →'],naam:'Kast',kort:'Beschermt en laat lucht stromen',
  wat:'De kast houdt alle onderdelen op hun plek en zorgt voor luchtstroom. Koele lucht gaat aan de voorkant naar binnen, warme lucht gaat aan de achterkant en bovenkant naar buiten.',
  deel:[['Voorventilatoren','Zuigen koele lucht naar binnen.'],['Achterventilator','Blaast warme lucht naar buiten.'],['Moederbordplaat met standoffs','Hier komen de afstandshouders in en daarna het moederbord.'],['Voedingsruimte','Onderin, meestal met een afdekplaat voor de kabels.'],['I/O-schildje','Het gat in de achterkant voor de poorten van het moederbord.']],
  kies:['Het moederbordformaat moet passen (ATX of mATX).','Controleer de maximale lengte van de videokaart.','Controleer de maximale hoogte van de koeler.','Kijk of er ventilatoren bij zitten en of de voorkant lucht doorlaat.'],
@@ -277,7 +279,7 @@ function show(){
   '<div class="cols"><section><h2>Let op bij het kiezen</h2><ul>'+p.kies.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></section>'+
   '<section><h2>Begrippen</h2><dl>'+p.term.map(function(t){return '<div><dt>'+esc(t[0])+'</dt><dd>'+esc(t[1])+'</dd></div>';}).join('')+'</dl></section>'+
   '<section class="fouten"><h2>Veelgemaakte fouten</h2><ul>'+p.fout.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></section></div>'+
-  '<a class="cta" href="pc-bouwlab.html">Oefen dit in het PC Bouwlab →</a></article>'+
+  '<div class="ctas"><a class="cta" href="pc-bouwlab.html">Oefen dit in het PC Bouwlab →</a>'+(p.extra?'<a class="cta ghost" href="'+p.extra[0]+'">'+esc(p.extra[1])+'</a>':'')+'</div></article>'+
   '<div class="pager"><a href="#'+prev.id+'">← '+esc(prev.naam)+'</a><a href="#'+next.id+'">'+esc(next.naam)+' →</a></div>';
  document.title=p.naam+' · Onderdelen-posters';
  window.scrollTo(0,0);
