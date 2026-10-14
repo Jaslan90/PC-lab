@@ -101,7 +101,7 @@ dd{margin:0;color:var(--muted)}
 <div class="wrap">
   <header class="top">
     <div><a class="back" href="index.html">&larr; Alle ICT-lessen</a><span class="brand">Onderdelen<span>-posters</span></span></div>
-    <div class="meta">Naslag bij het PC Bouwlab</div>
+    <div class="meta">Naslag bij het PC Bouwlab</div><button type="button" class="ict-theme" data-theme-toggle></button>
   </header>
   <div class="shell">
     <nav class="nav" id="nav" aria-label="Onderdelen"></nav>
@@ -109,6 +109,143 @@ dd{margin:0;color:var(--muted)}
   </div>
 </div>
 
+<script>/*SHARED:START*/
+(function(){
+'use strict';
+var ICT=window.ICT=window.ICT||{};
+function get(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function set(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
+
+/* ---------- stijl voor de gedeelde onderdelen ---------- */
+var css=''+
+':root{--wood:#8a5a2b;--wood2:#6e451f}'+
+'@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--wood:#b27a42;--wood2:#8d5f31}}'+
+':root[data-theme="dark"]{--wood:#b27a42;--wood2:#8d5f31}'+
+'.ict-theme{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:4px 12px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:500 13px var(--body);cursor:pointer;border-radius:3px}'+
+'.ict-theme:hover{border-color:var(--copper);color:var(--copper)}'+
+'.kist{background:var(--surface);border:1.5px solid var(--ink);padding:18px;display:grid;gap:14px;min-width:0;margin-top:20px}'+
+'.kist h2{font-family:var(--disp);font-weight:700;text-transform:uppercase;font-size:24px;letter-spacing:.02em;line-height:1.05;margin:0}'+
+'.kist p{margin:0}'+
+'.kist .muted{color:var(--muted)}.kist .small{font-size:14px}'+
+'.kist-row{display:grid;grid-template-columns:minmax(0,400px) 150px;justify-content:start;gap:24px;align-items:center}'+
+'@media (max-width:560px){.kist-row{grid-template-columns:minmax(0,1fr)}.kist-row .chest{max-width:150px}}'+
+'.kist svg{display:block;width:100%;height:auto}'+
+'.kist-parts{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:15px}'+
+'.kist-parts li{display:grid;grid-template-columns:22px minmax(0,1fr);gap:6px}'+
+'.kist-parts .y{color:var(--ok)}.kist-parts .n{color:var(--muted)}'+
+'.kist-win{font-weight:600;color:var(--ok)}'+
+'.ict-btn{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:8px 18px;border:1.5px solid var(--copper);background:var(--copper);color:var(--on-copper);font:600 15px var(--body);cursor:pointer;border-radius:3px;justify-self:start}'+
+'.ict-btn:hover{filter:brightness(1.07)}'+
+'.proof{border:2px solid var(--gold);background:var(--bg);padding:18px;display:grid;gap:8px}'+
+'.proof .kk{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}'+
+'.proof .pname{font-family:var(--disp);font-weight:800;text-transform:uppercase;font-size:clamp(30px,6vw,48px);line-height:1;margin:0;overflow-wrap:anywhere}'+
+'.proof label{font-size:14px;font-weight:600}'+
+'.proof input{font:400 16px var(--body);padding:8px 10px;border:1.5px solid var(--ink);background:var(--surface);color:var(--ink);max-width:320px;border-radius:3px}'+
+'.proof .small{font-size:14px;color:var(--muted)}'+
+'@media (prefers-reduced-motion:no-preference){.twinkle{animation:tw 1.8s ease-in-out infinite}.twinkle.b{animation-delay:.6s}.twinkle.c{animation-delay:1.1s}@keyframes tw{0%,100%{opacity:.25}50%{opacity:1}}}';
+var st=document.createElement('style');st.setAttribute('data-ict','shared');st.appendChild(document.createTextNode(css));document.head.appendChild(st);
+
+/* ---------- donkere modus ---------- */
+var root=document.documentElement;
+var savedTheme=get('ict-theme');
+if(savedTheme==='dark'||savedTheme==='light')root.setAttribute('data-theme',savedTheme);
+function sysDark(){try{return window.matchMedia('(prefers-color-scheme: dark)').matches;}catch(e){return false;}}
+function isDark(){var t=root.getAttribute('data-theme');return t==='dark'?true:t==='light'?false:sysDark();}
+var MOON='<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="currentColor"/></svg>';
+var SUN='<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></g></svg>';
+function btnInner(){var d=isDark();return (d?SUN:MOON)+'<span>'+(d?'Lichte modus':'Donkere modus')+'</span>';}
+ICT.themeBtn=function(){var d=isDark();return '<button type="button" class="ict-theme" data-theme-toggle aria-pressed="'+d+'" aria-label="'+(d?'Schakel naar lichte modus':'Schakel naar donkere modus')+'">'+btnInner()+'</button>';};
+function paint(){var d=isDark();[].forEach.call(document.querySelectorAll('[data-theme-toggle]'),function(b){b.setAttribute('aria-pressed',String(d));b.setAttribute('aria-label',d?'Schakel naar lichte modus':'Schakel naar donkere modus');b.innerHTML=btnInner();});}
+ICT.paintTheme=paint;
+function toggleTheme(){var n=isDark()?'light':'dark';root.setAttribute('data-theme',n);set('ict-theme',n);paint();try{window.dispatchEvent(new Event('ict-theme'));}catch(e){}}
+
+/* ---------- sleutel en schatkist ---------- */
+function parts(key,levels){var b={};try{b=JSON.parse(get(key))||{};}catch(e){}return levels.map(function(l){return (b[l.id]||0)>0;});}
+ICT.parts=parts;
+function dateFor(id,all){
+ if(!all)return '';
+ var k='ict-datum-'+id,d=get(k);
+ if(!d){d=new Date().toLocaleDateString('nl-NL',{day:'numeric',month:'long',year:'numeric'});set(k,d);}
+ return d;
+}
+var reg={},shown={};
+function keySVG(ok,all){
+ var o=all?[0,0,0]:[0,10,20],G='var(--gold)',ST='var(--wood2)',M='var(--muted)';
+ function paintPart(on){return on?'fill="'+G+'" stroke="'+ST+'" stroke-width="2"':'fill="none" stroke="'+M+'" stroke-width="2" stroke-dasharray="5 4"';}
+ var s='<svg viewBox="0 0 330 110" role="img" aria-label="Sleutel in drie delen: '+ok.filter(Boolean).length+' van '+ok.length+' gevonden">';
+ if(all)s+='<ellipse cx="165" cy="55" rx="150" ry="46" fill="'+G+'" opacity=".18"/>';
+ /* deel 1: ring met hals */
+ s+='<g transform="translate('+o[0]+' 0)"><path fill-rule="evenodd" '+paintPart(ok[0])+' d="M40 27a28 28 0 1 0 .01 0zM40 45a10 10 0 1 1-.01 0z"/><rect x="66" y="48" width="34" height="14" '+paintPart(ok[0])+'/></g>';
+ /* deel 2: schacht */
+ s+='<g transform="translate('+o[1]+' 0)"><rect x="100" y="48" width="125" height="14" '+paintPart(ok[1])+'/><rect x="132" y="42" width="8" height="26" '+paintPart(ok[1])+'/></g>';
+ /* deel 3: baard met tanden */
+ s+='<g transform="translate('+o[2]+' 0)"><path '+paintPart(ok[2])+' d="M225 48H300V84H288V70H276V84H264V70H252V84H240V62H225z"/></g>';
+ if(all){s+='<g fill="'+G+'"><path class="twinkle" d="M20 10l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/><path class="twinkle b" d="M312 18l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/><path class="twinkle c" d="M150 96l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/></g>';}
+ return s+'</svg>';
+}
+function chestSVG(all){
+ var W='var(--wood)',W2='var(--wood2)',G='var(--gold)';
+ var s='<svg class="chest" viewBox="0 0 160 130" role="img" aria-label="Schatkist, '+(all?'open':'dicht')+'">';
+ if(all){
+  s+='<circle cx="80" cy="60" r="58" fill="'+G+'" opacity=".2"/>';
+  s+='<path d="M30 62L38 10Q80 0 122 10L130 62z" fill="'+W2+'" stroke="'+W2+'" stroke-width="2"/><path d="M42 58L47 18Q80 11 113 18L118 58z" fill="'+W+'"/>';
+ }
+ s+='<rect x="20" y="62" width="120" height="56" rx="5" fill="'+W+'" stroke="'+W2+'" stroke-width="3"/><rect x="20" y="82" width="120" height="7" fill="'+W2+'"/>';
+ if(all){
+  s+='<path d="M26 63Q46 34 80 38Q114 34 134 63z" fill="'+G+'" stroke="'+W2+'" stroke-width="1.5"/>';
+  [[52,52],[72,46],[94,50],[112,56],[84,58],[62,60]].forEach(function(c){s+='<circle cx="'+c[0]+'" cy="'+c[1]+'" r="6" fill="'+G+'" stroke="'+W2+'" stroke-width="1.5"/>';});
+  s+='<path class="twinkle" d="M80 14l3 8 8 3-8 3-3 8-3-8-8-3 8-3z" fill="'+G+'"/><path class="twinkle b" d="M128 30l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="'+G+'"/><path class="twinkle c" d="M30 28l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="'+G+'"/>';
+ }else{
+  s+='<path d="M20 62Q20 26 80 26Q140 26 140 62z" fill="'+W+'" stroke="'+W2+'" stroke-width="3"/><path d="M20 50H140" stroke="'+W2+'" stroke-width="5"/>';
+  s+='<rect x="70" y="56" width="20" height="24" rx="3" fill="'+G+'" stroke="'+W2+'" stroke-width="2"/><circle cx="80" cy="66" r="3.5" fill="'+W2+'"/><rect x="78.5" y="66" width="3" height="8" fill="'+W2+'"/>';
+ }
+ return s+'</svg>';
+}
+function proofHTML(o,ok,date){
+ var name=get('ict-naam')||'';
+ return '<div class="proof" id="proof-'+esc(o.id)+'"><span class="kk">Bewijs van voltooiing</span>'+
+  '<p class="pname" data-kist-name>'+(name?esc(name):'Jouw naam')+'</p>'+
+  '<p>heeft alle '+o.levels.length+' niveaus van <b>'+esc(o.naam)+'</b> gehaald en de schatkist geopend.</p>'+
+  '<p class="small">Behaald op '+esc(date)+'. Sleuteldelen: '+o.levels.map(function(l){return esc(l.naam);}).join(', ')+'.</p>'+
+  '<label for="kist-naam">Typ hier je naam</label><input id="kist-naam" type="text" maxlength="40" autocomplete="off" value="'+esc(name)+'">'+
+  '<p class="small">Maak een schermafbeelding van dit bewijs en lever die in bij je docent.</p></div>';
+}
+ICT.kist=function(o){
+ reg[o.id]=o;
+ var ok=parts(o.key,o.levels),n=ok.filter(Boolean).length,all=n===o.levels.length,date=dateFor(o.id,all),left=o.levels.length-n;
+ var list=o.levels.map(function(l,i){return '<li><span class="'+(ok[i]?'y':'n')+'">'+(ok[i]?'✓':'·')+'</span><span>Deel '+(i+1)+': '+esc(l.naam)+(ok[i]?' <span class="muted">(gehaald)</span>':'')+'</span></li>';}).join('');
+ var h='<section class="kist" data-kist="'+esc(o.id)+'" aria-label="Sleutel en schatkist"><h2>Sleutel en schatkist</h2>'+
+  '<p class="small">'+(all?'Je hebt alle delen van de sleutel.':'Haal elk niveau om een deel van de sleutel te krijgen. Met de hele sleutel open je de schatkist.')+'</p>'+
+  '<div class="kist-row">'+keySVG(ok,all)+chestSVG(all)+'</div><ul class="kist-parts">'+list+'</ul>';
+ if(all){
+  h+='<p class="kist-win">De schatkist is open! Goed gedaan.</p><button type="button" class="ict-btn" data-kist-proof="'+esc(o.id)+'" aria-expanded="'+(!!shown[o.id])+'">'+(shown[o.id]?'Verberg bewijs':'Toon bewijs')+'</button>';
+  if(shown[o.id])h+=proofHTML(o,ok,date);
+ }else h+='<p class="muted small">Nog '+left+' sleuteldeel'+(left===1?'':'en')+' te gaan.</p>';
+ return h+'</section>';
+};
+
+/* ---------- gebeurtenissen ---------- */
+document.addEventListener('click',function(e){
+ var t=e.target.closest?e.target.closest('[data-theme-toggle],[data-kist-proof]'):null;
+ if(!t)return;
+ if(t.hasAttribute('data-theme-toggle')){toggleTheme();return;}
+ var id=t.getAttribute('data-kist-proof'),o=reg[id];if(!o)return;
+ shown[id]=!shown[id];
+ var el=document.querySelector('[data-kist="'+id+'"]');
+ if(el){var d=document.createElement('div');d.innerHTML=ICT.kist(o);el.parentNode.replaceChild(d.firstChild,el);
+  var nb=document.querySelector('[data-kist-proof="'+id+'"]');if(nb)nb.focus();}
+});
+document.addEventListener('input',function(e){
+ if(e.target&&e.target.id==='kist-naam'){
+  var v=e.target.value;set('ict-naam',v);
+  [].forEach.call(document.querySelectorAll('[data-kist-name]'),function(n){n.textContent=v||'Jouw naam';});
+ }
+});
+paint();
+})();
+
+/*SHARED:END*/</script>
 <script>
 (function(){
 'use strict';
@@ -199,7 +336,7 @@ psu:function(){
  s+='<circle cx="316" cy="60" r="20" fill="var(--slot)" stroke="var(--metal2)"/><circle cx="316" cy="60" r="5" fill="var(--gold)"/>';
  s+='<rect x="338" y="100" width="12" height="70" fill="var(--metal)"/>';
  s+='<text class="t" x="70" y="297" style="font-size:9px">VOORKANT</text><text class="t" x="350" y="297" text-anchor="end" style="font-size:9px">ACHTERKANT</text>';
- return SV(s+B(118,120,1)+B(316,100,2)+B(205,72,3)+B(210,212,4)+B(366,135,5),'Kast met open zijpaneel');
+ return SV(s+B(118,120,1)+B(316,100,2)+B(205,72,3)+B(210,212,4)+B(366,135,5),'Behuizing met open zijpaneel');
 }
 };
 
@@ -219,7 +356,7 @@ var P=[
 {id:'board',naam:'Moederbord',kort:'Alles komt hier samen',
  wat:'Alle onderdelen worden op het moederbord aangesloten. Het bord bepaalt welke onderdelen je kunt gebruiken en hoe ze met elkaar praten.',
  deel:[['Processorsocket','De plek voor de processor. Het type moet bij je processor passen.'],['Geheugensleuven','Vier sleuven voor RAM. Gebruik sleuf 2 en 4 voor twee modules.'],['PCIe-sleuven','Voor de videokaart. De bovenste lange sleuf is meestal de snelste.'],['M.2-sleuf','Voor een NVMe-SSD, direct op het bord.'],['24-pins voeding','De brede aansluiting voor de hoofdvoeding.'],['8-pins processorvoeding','Extra stroom voor de processor (EPS).'],['I/O-paneel','De poorten aan de achterkant: USB, netwerk, beeld en audio.'],['Chipset','Regelt de communicatie tussen de onderdelen en bepaalt welke functies het bord heeft.']],
- kies:['Het socket moet bij de processor passen.','Het geheugentype moet kloppen: DDR4 en DDR5 passen niet in elkaars sleuf.','Het formaat (ATX of mATX) moet in de kast passen.','Tel het aantal M.2-sleuven en USB-poorten dat je nodig hebt.'],
+ kies:['Het socket moet bij de processor passen.','Het geheugentype moet kloppen: DDR4 en DDR5 passen niet in elkaars sleuf.','Het formaat (ATX of mATX) moet in de behuizing passen.','Tel het aantal M.2-sleuven en USB-poorten dat je nodig hebt.'],
  term:[['Chipset','Het ondersteunende chipje, bijvoorbeeld B650 of B760.'],['ATX / mATX','Formaten van het bord. mATX is kleiner.'],['BIOS / UEFI','De software op het bord die bij het opstarten draait en waarin je instellingen doet.'],['PCIe','De snelle verbinding voor onder meer videokaarten.']],
  fout:['Een bord kopen waar het geheugen niet bij past.','Het I/O-schildje vergeten.','Standoffs op plekken zonder schroefgat.']},
 
@@ -233,7 +370,7 @@ var P=[
 {id:'gpu',naam:'Videokaart',kort:'Maakt het beeld',
  wat:'De videokaart (GPU) berekent wat je op het scherm ziet. Voor games, 3D en video is een losse videokaart veel sneller dan de graphics in de processor.',
  deel:[['Ventilatoren','Blazen de warmte van de kaart weg.'],['Koellichaam','Het metalen blok onder de ventilatoren, met daaronder de GPU-chip en het videogeheugen.'],['PCIe-contacten','De gouden strip die in het bovenste lange PCIe-slot past.'],['Voedingsaansluiting','Een 6- of 8-pins kabel van de voeding. Zonder deze kabel start de kaart niet.'],['Beugel met poorten','Hier steek je de monitorkabel in (HDMI of DisplayPort).']],
- kies:['Controleer de lengte in millimeters. De kaart moet in de kast passen.','Kijk naar het verbruik in watt voor de keuze van de voeding.','Meer videogeheugen (VRAM) helpt bij hoge resoluties en grote textures.','Er is een PCIe x16-slot nodig.'],
+ kies:['Controleer de lengte in millimeters. De kaart moet in de behuizing passen.','Kijk naar het verbruik in watt voor de keuze van de voeding.','Meer videogeheugen (VRAM) helpt bij hoge resoluties en grote textures.','Er is een PCIe x16-slot nodig.'],
  term:[['GPU','De grafische chip op de kaart.'],['VRAM','Het eigen geheugen van de videokaart.'],['HDMI / DisplayPort','Aansluitingen voor de monitor.'],['PCIe x16','Het lange slot waar de kaart in past.']],
  fout:['De monitor in het moederbord steken in plaats van in de videokaart.','De voedingskabel van de kaart vergeten.','De kaart in het onderste lange slot zetten. Dat is vaak maar x4 en dus veel trager.']},
 
@@ -247,7 +384,7 @@ var P=[
 {id:'cooler',extra:['airflow-lab.html','Test de luchtstroom in het Airflow-lab →'],naam:'Koeler',kort:'Voert de warmte af',
  wat:'Een processor wordt warm als hij rekent. De koeler neemt die warmte op en blaast hem weg. Wordt het te heet, dan gaat de processor langzamer werken.',
  deel:[['Koelplaat','Het vlakke deel dat op de processor ligt en de warmte opneemt.'],['Heatpipes','Holle koperen buizen die de warmte snel naar boven brengen.'],['Lamellen','Dunne aluminium plaatjes die de warmte aan de lucht afgeven.'],['Ventilator','Blaast lucht door de lamellen.'],['Koelpasta','Een dun laagje tussen processor en koelplaat. Het vult de kleine oneffenheden, want lucht geleidt warmte slecht.']],
- kies:['De koeler moet minstens zoveel watt aankunnen als de processor verbruikt.','Controleer de hoogte. De koeler moet onder het zijpaneel van de kast passen.','Controleer of de koeler bij het socket past.','Bij veel processors zit een boxkoeler in de doos.'],
+ kies:['De koeler moet minstens zoveel watt aankunnen als de processor verbruikt.','Controleer de hoogte. De koeler moet onder het zijpaneel van de behuizing passen.','Controleer of de koeler bij het socket past.','Bij veel processors zit een boxkoeler in de doos.'],
  term:[['TDP','Het vermogen dat de koeler moet kunnen afvoeren.'],['Koelpasta','Vult de ruimte tussen processor en koeler.'],['Heatpipe','Een buis die warmte snel verplaatst.'],['Thermal throttling','De processor schakelt terug omdat hij te heet wordt.']],
  fout:['Te veel of te weinig pasta gebruiken. Een erwtgrote druppel is genoeg.','De beschermfolie onderop de koeler laten zitten.','De ventilator niet op CPU_FAN aansluiten.','De schroeven niet kruislings aandraaien.']},
 
@@ -258,12 +395,12 @@ var P=[
  term:[['Watt (W)','Hoeveel vermogen de voeding kan leveren.'],['Rendement','Hoeveel van de stroom echt bij de onderdelen aankomt.'],['80 PLUS','Een keurmerk voor rendement.'],['Modulair','De kabels kun je los aansluiten of weglaten.']],
  fout:['Een voeding kiezen die te weinig watt levert.','De 8-pins processorkabel en de PCIe-kabel verwisselen. Ze lijken op elkaar.','In de pc werken terwijl de stekker nog in het stopcontact zit.']},
 
-{id:'case',extra:['airflow-lab.html','Test de luchtstroom in het Airflow-lab →'],naam:'Kast',kort:'Beschermt en laat lucht stromen',
- wat:'De kast houdt alle onderdelen op hun plek en zorgt voor luchtstroom. Koele lucht gaat aan de voorkant naar binnen, warme lucht gaat aan de achterkant en bovenkant naar buiten.',
+{id:'case',extra:['airflow-lab.html','Test de luchtstroom in het Airflow-lab →'],naam:'Behuizing',kort:'Beschermt en laat lucht stromen',
+ wat:'De behuizing houdt alle onderdelen op hun plek en zorgt voor luchtstroom. Koele lucht gaat aan de voorkant naar binnen, warme lucht gaat aan de achterkant en bovenkant naar buiten.',
  deel:[['Voorventilatoren','Zuigen koele lucht naar binnen.'],['Achterventilator','Blaast warme lucht naar buiten.'],['Moederbordplaat met standoffs','Hier komen de afstandshouders in en daarna het moederbord.'],['Voedingsruimte','Onderin, meestal met een afdekplaat voor de kabels.'],['I/O-schildje','Het gat in de achterkant voor de poorten van het moederbord.']],
  kies:['Het moederbordformaat moet passen (ATX of mATX).','Controleer de maximale lengte van de videokaart.','Controleer de maximale hoogte van de koeler.','Kijk of er ventilatoren bij zitten en of de voorkant lucht doorlaat.'],
- term:[['Standoff','Een afstandshouder die het bord van het metaal houdt.'],['Airflow','De luchtstroom door de kast.'],['Cable management','Kabels netjes weg leggen, voor betere luchtstroom.'],['ATX / mATX / ITX','Formaten van het moederbord, van groot naar klein.']],
- fout:['Standoffs op verkeerde plekken zetten, waardoor het bord kortsluiting maakt.','Een videokaart kopen die langer is dan de kast.','Kabels voor de ventilatoren laten hangen.']}
+ term:[['Standoff','Een afstandshouder die het bord van het metaal houdt.'],['Airflow','De luchtstroom door de behuizing.'],['Cable management','Kabels netjes weg leggen, voor betere luchtstroom.'],['ATX / mATX / ITX','Formaten van het moederbord, van groot naar klein.']],
+ fout:['Standoffs op verkeerde plekken zetten, waardoor het bord kortsluiting maakt.','Een videokaart kopen die langer is dan de behuizing.','Kabels voor de ventilatoren laten hangen.']}
 ];
 
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}

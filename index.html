@@ -73,7 +73,7 @@ a.lesson:hover{border-color:var(--copper);box-shadow:inset 0 0 0 1px var(--coppe
 </style>
 
 <div class="wrap">
-  <header class="top"><div class="brand">ICT <span>lessen</span></div><div class="meta">Zelfstandig werken</div></header>
+  <header class="top"><div class="brand">ICT <span>lessen</span></div><div class="meta">Zelfstandig werken</div><button type="button" class="ict-theme" data-theme-toggle></button></header>
   <h1>Kies een opdracht.</h1>
   <p class="lead">Elke les is een opdracht die je zelf uitvoert, in je eigen tempo. Je ziet direct wat goed gaat en wat niet.</p>
   <div class="layout">
@@ -88,13 +88,150 @@ a.lesson:hover{border-color:var(--copper);box-shadow:inset 0 0 0 1px var(--coppe
   <p class="note">Je voortgang wordt bewaard in deze browser op deze laptop. Gebruik je een andere laptop of browser, dan begin je opnieuw.</p>
 </div>
 
+<script>/*SHARED:START*/
+(function(){
+'use strict';
+var ICT=window.ICT=window.ICT||{};
+function get(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function set(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
+
+/* ---------- stijl voor de gedeelde onderdelen ---------- */
+var css=''+
+':root{--wood:#8a5a2b;--wood2:#6e451f}'+
+'@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--wood:#b27a42;--wood2:#8d5f31}}'+
+':root[data-theme="dark"]{--wood:#b27a42;--wood2:#8d5f31}'+
+'.ict-theme{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:4px 12px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:500 13px var(--body);cursor:pointer;border-radius:3px}'+
+'.ict-theme:hover{border-color:var(--copper);color:var(--copper)}'+
+'.kist{background:var(--surface);border:1.5px solid var(--ink);padding:18px;display:grid;gap:14px;min-width:0;margin-top:20px}'+
+'.kist h2{font-family:var(--disp);font-weight:700;text-transform:uppercase;font-size:24px;letter-spacing:.02em;line-height:1.05;margin:0}'+
+'.kist p{margin:0}'+
+'.kist .muted{color:var(--muted)}.kist .small{font-size:14px}'+
+'.kist-row{display:grid;grid-template-columns:minmax(0,400px) 150px;justify-content:start;gap:24px;align-items:center}'+
+'@media (max-width:560px){.kist-row{grid-template-columns:minmax(0,1fr)}.kist-row .chest{max-width:150px}}'+
+'.kist svg{display:block;width:100%;height:auto}'+
+'.kist-parts{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:15px}'+
+'.kist-parts li{display:grid;grid-template-columns:22px minmax(0,1fr);gap:6px}'+
+'.kist-parts .y{color:var(--ok)}.kist-parts .n{color:var(--muted)}'+
+'.kist-win{font-weight:600;color:var(--ok)}'+
+'.ict-btn{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:8px 18px;border:1.5px solid var(--copper);background:var(--copper);color:var(--on-copper);font:600 15px var(--body);cursor:pointer;border-radius:3px;justify-self:start}'+
+'.ict-btn:hover{filter:brightness(1.07)}'+
+'.proof{border:2px solid var(--gold);background:var(--bg);padding:18px;display:grid;gap:8px}'+
+'.proof .kk{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}'+
+'.proof .pname{font-family:var(--disp);font-weight:800;text-transform:uppercase;font-size:clamp(30px,6vw,48px);line-height:1;margin:0;overflow-wrap:anywhere}'+
+'.proof label{font-size:14px;font-weight:600}'+
+'.proof input{font:400 16px var(--body);padding:8px 10px;border:1.5px solid var(--ink);background:var(--surface);color:var(--ink);max-width:320px;border-radius:3px}'+
+'.proof .small{font-size:14px;color:var(--muted)}'+
+'@media (prefers-reduced-motion:no-preference){.twinkle{animation:tw 1.8s ease-in-out infinite}.twinkle.b{animation-delay:.6s}.twinkle.c{animation-delay:1.1s}@keyframes tw{0%,100%{opacity:.25}50%{opacity:1}}}';
+var st=document.createElement('style');st.setAttribute('data-ict','shared');st.appendChild(document.createTextNode(css));document.head.appendChild(st);
+
+/* ---------- donkere modus ---------- */
+var root=document.documentElement;
+var savedTheme=get('ict-theme');
+if(savedTheme==='dark'||savedTheme==='light')root.setAttribute('data-theme',savedTheme);
+function sysDark(){try{return window.matchMedia('(prefers-color-scheme: dark)').matches;}catch(e){return false;}}
+function isDark(){var t=root.getAttribute('data-theme');return t==='dark'?true:t==='light'?false:sysDark();}
+var MOON='<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="currentColor"/></svg>';
+var SUN='<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></g></svg>';
+function btnInner(){var d=isDark();return (d?SUN:MOON)+'<span>'+(d?'Lichte modus':'Donkere modus')+'</span>';}
+ICT.themeBtn=function(){var d=isDark();return '<button type="button" class="ict-theme" data-theme-toggle aria-pressed="'+d+'" aria-label="'+(d?'Schakel naar lichte modus':'Schakel naar donkere modus')+'">'+btnInner()+'</button>';};
+function paint(){var d=isDark();[].forEach.call(document.querySelectorAll('[data-theme-toggle]'),function(b){b.setAttribute('aria-pressed',String(d));b.setAttribute('aria-label',d?'Schakel naar lichte modus':'Schakel naar donkere modus');b.innerHTML=btnInner();});}
+ICT.paintTheme=paint;
+function toggleTheme(){var n=isDark()?'light':'dark';root.setAttribute('data-theme',n);set('ict-theme',n);paint();try{window.dispatchEvent(new Event('ict-theme'));}catch(e){}}
+
+/* ---------- sleutel en schatkist ---------- */
+function parts(key,levels){var b={};try{b=JSON.parse(get(key))||{};}catch(e){}return levels.map(function(l){return (b[l.id]||0)>0;});}
+ICT.parts=parts;
+function dateFor(id,all){
+ if(!all)return '';
+ var k='ict-datum-'+id,d=get(k);
+ if(!d){d=new Date().toLocaleDateString('nl-NL',{day:'numeric',month:'long',year:'numeric'});set(k,d);}
+ return d;
+}
+var reg={},shown={};
+function keySVG(ok,all){
+ var o=all?[0,0,0]:[0,10,20],G='var(--gold)',ST='var(--wood2)',M='var(--muted)';
+ function paintPart(on){return on?'fill="'+G+'" stroke="'+ST+'" stroke-width="2"':'fill="none" stroke="'+M+'" stroke-width="2" stroke-dasharray="5 4"';}
+ var s='<svg viewBox="0 0 330 110" role="img" aria-label="Sleutel in drie delen: '+ok.filter(Boolean).length+' van '+ok.length+' gevonden">';
+ if(all)s+='<ellipse cx="165" cy="55" rx="150" ry="46" fill="'+G+'" opacity=".18"/>';
+ /* deel 1: ring met hals */
+ s+='<g transform="translate('+o[0]+' 0)"><path fill-rule="evenodd" '+paintPart(ok[0])+' d="M40 27a28 28 0 1 0 .01 0zM40 45a10 10 0 1 1-.01 0z"/><rect x="66" y="48" width="34" height="14" '+paintPart(ok[0])+'/></g>';
+ /* deel 2: schacht */
+ s+='<g transform="translate('+o[1]+' 0)"><rect x="100" y="48" width="125" height="14" '+paintPart(ok[1])+'/><rect x="132" y="42" width="8" height="26" '+paintPart(ok[1])+'/></g>';
+ /* deel 3: baard met tanden */
+ s+='<g transform="translate('+o[2]+' 0)"><path '+paintPart(ok[2])+' d="M225 48H300V84H288V70H276V84H264V70H252V84H240V62H225z"/></g>';
+ if(all){s+='<g fill="'+G+'"><path class="twinkle" d="M20 10l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/><path class="twinkle b" d="M312 18l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/><path class="twinkle c" d="M150 96l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/></g>';}
+ return s+'</svg>';
+}
+function chestSVG(all){
+ var W='var(--wood)',W2='var(--wood2)',G='var(--gold)';
+ var s='<svg class="chest" viewBox="0 0 160 130" role="img" aria-label="Schatkist, '+(all?'open':'dicht')+'">';
+ if(all){
+  s+='<circle cx="80" cy="60" r="58" fill="'+G+'" opacity=".2"/>';
+  s+='<path d="M30 62L38 10Q80 0 122 10L130 62z" fill="'+W2+'" stroke="'+W2+'" stroke-width="2"/><path d="M42 58L47 18Q80 11 113 18L118 58z" fill="'+W+'"/>';
+ }
+ s+='<rect x="20" y="62" width="120" height="56" rx="5" fill="'+W+'" stroke="'+W2+'" stroke-width="3"/><rect x="20" y="82" width="120" height="7" fill="'+W2+'"/>';
+ if(all){
+  s+='<path d="M26 63Q46 34 80 38Q114 34 134 63z" fill="'+G+'" stroke="'+W2+'" stroke-width="1.5"/>';
+  [[52,52],[72,46],[94,50],[112,56],[84,58],[62,60]].forEach(function(c){s+='<circle cx="'+c[0]+'" cy="'+c[1]+'" r="6" fill="'+G+'" stroke="'+W2+'" stroke-width="1.5"/>';});
+  s+='<path class="twinkle" d="M80 14l3 8 8 3-8 3-3 8-3-8-8-3 8-3z" fill="'+G+'"/><path class="twinkle b" d="M128 30l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="'+G+'"/><path class="twinkle c" d="M30 28l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="'+G+'"/>';
+ }else{
+  s+='<path d="M20 62Q20 26 80 26Q140 26 140 62z" fill="'+W+'" stroke="'+W2+'" stroke-width="3"/><path d="M20 50H140" stroke="'+W2+'" stroke-width="5"/>';
+  s+='<rect x="70" y="56" width="20" height="24" rx="3" fill="'+G+'" stroke="'+W2+'" stroke-width="2"/><circle cx="80" cy="66" r="3.5" fill="'+W2+'"/><rect x="78.5" y="66" width="3" height="8" fill="'+W2+'"/>';
+ }
+ return s+'</svg>';
+}
+function proofHTML(o,ok,date){
+ var name=get('ict-naam')||'';
+ return '<div class="proof" id="proof-'+esc(o.id)+'"><span class="kk">Bewijs van voltooiing</span>'+
+  '<p class="pname" data-kist-name>'+(name?esc(name):'Jouw naam')+'</p>'+
+  '<p>heeft alle '+o.levels.length+' niveaus van <b>'+esc(o.naam)+'</b> gehaald en de schatkist geopend.</p>'+
+  '<p class="small">Behaald op '+esc(date)+'. Sleuteldelen: '+o.levels.map(function(l){return esc(l.naam);}).join(', ')+'.</p>'+
+  '<label for="kist-naam">Typ hier je naam</label><input id="kist-naam" type="text" maxlength="40" autocomplete="off" value="'+esc(name)+'">'+
+  '<p class="small">Maak een schermafbeelding van dit bewijs en lever die in bij je docent.</p></div>';
+}
+ICT.kist=function(o){
+ reg[o.id]=o;
+ var ok=parts(o.key,o.levels),n=ok.filter(Boolean).length,all=n===o.levels.length,date=dateFor(o.id,all),left=o.levels.length-n;
+ var list=o.levels.map(function(l,i){return '<li><span class="'+(ok[i]?'y':'n')+'">'+(ok[i]?'✓':'·')+'</span><span>Deel '+(i+1)+': '+esc(l.naam)+(ok[i]?' <span class="muted">(gehaald)</span>':'')+'</span></li>';}).join('');
+ var h='<section class="kist" data-kist="'+esc(o.id)+'" aria-label="Sleutel en schatkist"><h2>Sleutel en schatkist</h2>'+
+  '<p class="small">'+(all?'Je hebt alle delen van de sleutel.':'Haal elk niveau om een deel van de sleutel te krijgen. Met de hele sleutel open je de schatkist.')+'</p>'+
+  '<div class="kist-row">'+keySVG(ok,all)+chestSVG(all)+'</div><ul class="kist-parts">'+list+'</ul>';
+ if(all){
+  h+='<p class="kist-win">De schatkist is open! Goed gedaan.</p><button type="button" class="ict-btn" data-kist-proof="'+esc(o.id)+'" aria-expanded="'+(!!shown[o.id])+'">'+(shown[o.id]?'Verberg bewijs':'Toon bewijs')+'</button>';
+  if(shown[o.id])h+=proofHTML(o,ok,date);
+ }else h+='<p class="muted small">Nog '+left+' sleuteldeel'+(left===1?'':'en')+' te gaan.</p>';
+ return h+'</section>';
+};
+
+/* ---------- gebeurtenissen ---------- */
+document.addEventListener('click',function(e){
+ var t=e.target.closest?e.target.closest('[data-theme-toggle],[data-kist-proof]'):null;
+ if(!t)return;
+ if(t.hasAttribute('data-theme-toggle')){toggleTheme();return;}
+ var id=t.getAttribute('data-kist-proof'),o=reg[id];if(!o)return;
+ shown[id]=!shown[id];
+ var el=document.querySelector('[data-kist="'+id+'"]');
+ if(el){var d=document.createElement('div');d.innerHTML=ICT.kist(o);el.parentNode.replaceChild(d.firstChild,el);
+  var nb=document.querySelector('[data-kist-proof="'+id+'"]');if(nb)nb.focus();}
+});
+document.addEventListener('input',function(e){
+ if(e.target&&e.target.id==='kist-naam'){
+  var v=e.target.value;set('ict-naam',v);
+  [].forEach.call(document.querySelectorAll('[data-kist-name]'),function(n){n.textContent=v||'Jouw naam';});
+ }
+});
+paint();
+})();
+
+/*SHARED:END*/</script>
 <script>
 (function(){
 'use strict';
 /* Een les toevoegen: zet een nieuw object in deze lijst en zet het HTML-bestand van de les naast dit bestand.
    Velden: href (bestand), thema, titel, tekst, chips (lijst), art (tekening), voortgang (optionele functie). */
 var ART={
- air:'<svg class="art" viewBox="0 0 300 132" role="img" aria-label="Pc-kast met pijlen voor luchtstroom"><rect x="60" y="28" width="190" height="96" rx="6" fill="var(--surface)" stroke="var(--metal2)" stroke-width="3"/>'+
+ air:'<svg class="art" viewBox="0 0 300 132" role="img" aria-label="Pc-behuizing met pijlen voor luchtstroom"><rect x="60" y="28" width="190" height="96" rx="6" fill="var(--surface)" stroke="var(--metal2)" stroke-width="3"/>'+
   '<rect x="90" y="40" width="124" height="62" rx="3" fill="var(--pcb)" opacity=".4"/><circle cx="172" cy="62" r="14" fill="var(--metal2)"/><rect x="108" y="82" width="70" height="12" rx="3" fill="var(--slot)"/>'+
   '<line x1="16" y1="76" x2="48" y2="76" stroke="var(--cool)" stroke-width="5" stroke-linecap="round"/><polygon points="46,67 58,76 46,85" fill="var(--cool)"/>'+
   '<line x1="252" y1="48" x2="282" y2="48" stroke="var(--hot)" stroke-width="5" stroke-linecap="round"/><polygon points="278,39 292,48 278,57" fill="var(--hot)"/>'+
@@ -108,22 +245,19 @@ var ART={
   '<rect x="224" y="20" width="9" height="92" rx="1" fill="var(--slot)"/><rect x="238" y="20" width="9" height="92" rx="1" fill="var(--ram)"/>'+
   '<rect x="26" y="114" width="90" height="6" fill="var(--slot)"/></svg>'
 };
-function pcVoortgang(){
- var b={};try{b=JSON.parse(localStorage.getItem('pc-bouwlab-beste'))||{};}catch(e){}
- var n=Object.keys(b).filter(function(k){return b[k]>0;}).length;
- return n?{on:true,t:n+' van 3 opdrachten gebouwd'}:{on:false,t:'Nog niet gestart'};
+function sleutel(key,ids){
+ var n=ICT.parts(key,ids.map(function(i){return {id:i};})).filter(Boolean).length;
+ if(n===ids.length)return {on:true,t:'Schatkist geopend'};
+ return n?{on:true,t:n+' van '+ids.length+' sleuteldelen'}:{on:false,t:'Nog niet gestart'};
 }
-function airVoortgang(){
- var b={};try{b=JSON.parse(localStorage.getItem('airflow-lab-beste'))||{};}catch(e){}
- var n=Object.keys(b).filter(function(k){return b[k]>0;}).length;
- return n?{on:true,t:n+' van 3 opdrachten gehaald'}:{on:false,t:'Nog niet gestart'};
-}
+function pcVoortgang(){return sleutel('pc-bouwlab-beste',['student','gamer','creator']);}
+function airVoortgang(){return sleutel('airflow-lab-beste',['basis','hete-gpu','glas']);}
 var LESSONS=[
  {href:'pc-bouwlab.html',thema:'Hardware',titel:'PC Bouwlab',
   tekst:'Een klant heeft een budget. Kies onderdelen die bij elkaar passen en bouw de pc daarna stap voor stap in elkaar, tot het eerste opstartscherm.',
   chips:['3 opdrachten','Compatibiliteit','Montage'],art:'pc',voortgang:pcVoortgang},
  {href:'airflow-lab.html',thema:'Hardware',titel:'Airflow-lab',
-  tekst:'Plaats en draai de ventilatoren in een pc-kast, zodat koele lucht erin gaat en warme lucht eruit. Zie direct hoe warm de processor en de videokaart worden.',
+  tekst:'Plaats en draai de ventilatoren in een pc-behuizing, zodat koele lucht erin gaat en warme lucht eruit. Zie direct hoe warm de processor en de videokaart worden.',
   chips:['3 opdrachten','Luchtstroom','Temperatuur'],art:'air',voortgang:airVoortgang}
 ];
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
@@ -136,7 +270,7 @@ var h=LESSONS.map(function(l){
 }).join('');
 h+='<div class="lesson empty" aria-hidden="true"><p class="kicker">Volgende les</p><h2>Hier komt een nieuwe opdracht</h2></div>';
 document.getElementById('lessons').innerHTML=h;
-var POSTERS=[['cpu','Processor'],['board','Moederbord'],['ram','Geheugen'],['gpu','Videokaart'],['ssd','Opslag'],['cooler','Koeler'],['psu','Voeding'],['case','Kast']];
+var POSTERS=[['cpu','Processor'],['board','Moederbord'],['ram','Geheugen'],['gpu','Videokaart'],['ssd','Opslag'],['cooler','Koeler'],['psu','Voeding'],['case','Behuizing']];
 document.getElementById('plist').innerHTML=POSTERS.map(function(x){return '<a href="posters.html#'+x[0]+'">'+x[1]+'</a>';}).join('');
 })();
 </script>
