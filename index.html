@@ -237,6 +237,7 @@ var ART={
   '<line x1="252" y1="48" x2="282" y2="48" stroke="var(--hot)" stroke-width="5" stroke-linecap="round"/><polygon points="278,39 292,48 278,57" fill="var(--hot)"/>'+
   '<line x1="172" y1="26" x2="172" y2="12" stroke="var(--hot)" stroke-width="5" stroke-linecap="round"/><polygon points="163,16 172,4 181,16" fill="var(--hot)"/>'+
   '<path d="M66 76C110 76 130 52 172 62C210 70 230 50 250 48" fill="none" stroke="var(--cool)" stroke-width="3" stroke-dasharray="5 5"/></svg>',
+ zoek:'<svg class="art" viewBox="0 0 300 132" role="img" aria-label="Moederbord met gemarkeerde zones"><rect x="70" y="6" width="160" height="120" rx="4" fill="var(--pcb)" stroke="var(--pcb-d,var(--ink))" stroke-width="1.5"/><rect x="118" y="22" width="40" height="40" rx="2" fill="var(--slot)"/><rect x="176" y="18" width="8" height="62" fill="var(--slot)"/><rect x="190" y="18" width="8" height="62" fill="var(--slot)"/><rect x="82" y="92" width="90" height="8" fill="var(--slot)"/><rect x="82" y="108" width="90" height="8" fill="var(--slot)"/><g fill="none" stroke="var(--copper)" stroke-width="2" stroke-dasharray="5 4"><rect x="112" y="16" width="52" height="52" rx="3"/><rect x="170" y="12" width="32" height="74" rx="3"/><rect x="76" y="86" width="102" height="36" rx="3"/></g><g fill="var(--surface)" stroke="var(--ink)"><rect x="236" y="20" width="56" height="16" rx="3"/><rect x="236" y="58" width="56" height="16" rx="3"/><rect x="236" y="96" width="56" height="16" rx="3"/></g><g stroke="var(--copper)" stroke-width="1.5"><path d="M164 40H236M202 66H236M178 104H236" fill="none"/></g></svg>',
  pc:'<svg class="art" viewBox="0 0 300 132" role="img" aria-label="Moederbord met processor"><rect x="6" y="6" width="288" height="120" rx="4" fill="var(--pcb)" stroke="var(--pcb-d)" stroke-width="2"/>'+
   '<rect x="26" y="22" width="52" height="88" rx="3" fill="var(--metal)"/><rect x="96" y="30" width="72" height="72" rx="3" fill="var(--slot)" stroke="var(--metal2)" stroke-width="2"/>'+
   '<rect x="104" y="38" width="56" height="56" rx="3" fill="var(--cpu)" stroke="var(--metal2)" stroke-width="1.5"/><path d="M107 41h12l-12 12z" fill="var(--gold)"/>'+
@@ -251,6 +252,7 @@ function sleutel(key,ids){
  return n?{on:true,t:n+' van '+ids.length+' sleuteldelen'}:{on:false,t:'Nog niet gestart'};
 }
 function pcVoortgang(){return sleutel('pc-bouwlab-beste',['student','gamer','creator']);}
+function zoekVoortgang(){return sleutel('moederbord-zoekplaat-beste',['hulp','begrippen','blind']);}
 function airVoortgang(){return sleutel('airflow-lab-beste',['basis','hete-gpu','glas']);}
 var LESSONS=[
  {href:'pc-bouwlab.html',thema:'Hardware',titel:'PC Bouwlab',
@@ -258,7 +260,10 @@ var LESSONS=[
   chips:['3 opdrachten','Compatibiliteit','Montage'],art:'pc',voortgang:pcVoortgang},
  {href:'airflow-lab.html',thema:'Hardware',titel:'Airflow-lab',
   tekst:'Plaats en draai de ventilatoren in een pc-behuizing, zodat koele lucht erin gaat en warme lucht eruit. Zie direct hoe warm de processor en de videokaart worden.',
-  chips:['3 opdrachten','Luchtstroom','Temperatuur'],art:'air',voortgang:airVoortgang}
+  chips:['3 opdrachten','Luchtstroom','Temperatuur'],art:'air',voortgang:airVoortgang},
+ {href:'moederbord-zoekplaat.html',thema:'Hardware',titel:'Moederbord-zoekplaat',
+  tekst:'Een groot moederbord met acht zones. Sleep de begrippen naar de juiste plek: van processorsocket tot chipset.',
+  chips:['3 niveaus','8 zones','Begrippen'],art:'zoek',voortgang:zoekVoortgang}
 ];
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
 var h=LESSONS.map(function(l){
