@@ -240,9 +240,24 @@ var css=''+
 '.kist h2{font-family:var(--disp);font-weight:700;text-transform:uppercase;font-size:24px;letter-spacing:.02em;line-height:1.05;margin:0}'+
 '.kist p{margin:0}'+
 '.kist .muted{color:var(--muted)}.kist .small{font-size:14px}'+
-'.kist-row{display:grid;grid-template-columns:minmax(0,400px) 150px;justify-content:start;gap:24px;align-items:center}'+
-'@media (max-width:560px){.kist-row{grid-template-columns:minmax(0,1fr)}.kist-row .chest{max-width:150px}}'+
-'.kist svg{display:block;width:100%;height:auto}'+
+'.kist-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,300px);gap:22px;align-items:center}'+
+'@media (max-width:620px){.kist-row{grid-template-columns:minmax(0,1fr)}.kist-row .kchest{max-width:260px;margin:0 auto}}'+
+'.kkey{position:relative;aspect-ratio:1000/349;width:100%;max-width:520px;overflow:hidden;border:1.5px solid var(--ink);background:#14100c}'+
+'.kkey img{position:absolute;inset:0;width:100%;height:100%;display:block;max-width:none}'+
+'.kkey .ghost{filter:brightness(.3) saturate(.3)}'+
+'.kkey .kp{opacity:0;transition:opacity .7s ease}.kkey .kp.on{opacity:1}'+
+'.kkey .p1{clip-path:inset(0 60.4% 0 0)}.kkey .p2{clip-path:inset(0 35% 0 39.6%)}.kkey .p3{clip-path:inset(0 0 0 65%)}'+
+'.kkey .kn{position:absolute;top:50%;transform:translate(-50%,-50%);font:600 22px/1 var(--mono);color:#cbb27a;opacity:.85;pointer-events:none}.kkey .kn.on{display:none}'+
+'.kkey .kd{position:absolute;top:8%;bottom:8%;width:0;border-left:1.5px dashed rgba(203,178,122,.45);pointer-events:none}'+
+'.kchest{position:relative;aspect-ratio:560/443;width:100%;max-width:300px}'+
+'.kchest img{position:absolute;inset:0;width:100%;height:100%;display:block;max-width:none;z-index:1;transform-origin:50% 95%}'+
+'.kchest .o{opacity:0}.kchest.open .o{opacity:1}.kchest.open .c{opacity:0}'+
+'.kchest::before{content:"";position:absolute;inset:-14%;background:radial-gradient(closest-side,rgba(255,196,80,.5),rgba(255,196,80,0));opacity:0;transition:opacity .8s}.kchest.open::before{opacity:1}'+
+'.kchest.pop .o{animation:kpop .9s ease-out}'+
+'@keyframes kpop{0%{transform:scale(.93) translateY(8px)}55%{transform:scale(1.05) translateY(-4px)}100%{transform:none}}'+
+'.ksp{position:absolute;z-index:2;color:#ffd978;font-size:20px;line-height:1;opacity:0;pointer-events:none}.kchest.open .ksp{animation:ktw 2.4s ease-in-out infinite}'+
+'@keyframes ktw{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:1;transform:scale(1)}}'+
+'@media (prefers-reduced-motion:reduce){.kchest.pop .o,.kchest.open .ksp{animation:none}.kkey .kp,.kchest::before{transition:none}.kchest.open .ksp{opacity:.8}}'+
 '.kist-parts{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:15px}'+
 '.kist-parts li{display:grid;grid-template-columns:22px minmax(0,1fr);gap:6px}'+
 '.kist-parts .y{color:var(--ok)}.kist-parts .n{color:var(--muted)}'+
@@ -317,38 +332,53 @@ function dateFor(id,all){
  return d;
 }
 var reg={},shown={};
-function keySVG(ok,all){
- var o=all?[0,0,0]:[0,10,20],G='var(--gold)',ST='var(--wood2)',M='var(--muted)';
- function paintPart(on){return on?'fill="'+G+'" stroke="'+ST+'" stroke-width="2"':'fill="none" stroke="'+M+'" stroke-width="2" stroke-dasharray="5 4"';}
- var s='<svg viewBox="0 0 330 110" role="img" aria-label="Sleutel in drie delen: '+ok.filter(Boolean).length+' van '+ok.length+' gevonden">';
- if(all)s+='<ellipse cx="165" cy="55" rx="150" ry="46" fill="'+G+'" opacity=".18"/>';
- /* deel 1: ring met hals */
- s+='<g transform="translate('+o[0]+' 0)"><path fill-rule="evenodd" '+paintPart(ok[0])+' d="M40 27a28 28 0 1 0 .01 0zM40 45a10 10 0 1 1-.01 0z"/><rect x="66" y="48" width="34" height="14" '+paintPart(ok[0])+'/></g>';
- /* deel 2: schacht */
- s+='<g transform="translate('+o[1]+' 0)"><rect x="100" y="48" width="125" height="14" '+paintPart(ok[1])+'/><rect x="132" y="42" width="8" height="26" '+paintPart(ok[1])+'/></g>';
- /* deel 3: baard met tanden */
- s+='<g transform="translate('+o[2]+' 0)"><path '+paintPart(ok[2])+' d="M225 48H300V84H288V70H276V84H264V70H252V84H240V62H225z"/></g>';
- if(all){s+='<g fill="'+G+'"><path class="twinkle" d="M20 10l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/><path class="twinkle b" d="M312 18l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/><path class="twinkle c" d="M150 96l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/></g>';}
- return s+'</svg>';
+var played={};
+function keyHTML(ok){
+ var n=ok.filter(Boolean).length;
+ return '<div class="kkey" role="img" aria-label="Sleutel in drie delen: '+n+' van '+ok.length+' gevonden">'+
+  '<img class="ghost" src="sleutel.jpg" alt="">'+
+  [0,1,2].map(function(i){return '<img class="kp p'+(i+1)+(ok[i]?' on':'')+'" src="sleutel.jpg" alt="">';}).join('')+
+  '<span class="kd" style="left:39.6%"></span><span class="kd" style="left:65%"></span>'+
+  [20,52,82].map(function(x,i){return '<span class="kn'+(ok[i]?' on':'')+'" style="left:'+x+'%">'+(i+1)+'</span>';}).join('')+'</div>';
 }
-function chestSVG(all){
- var W='var(--wood)',W2='var(--wood2)',G='var(--gold)';
- var s='<svg class="chest" viewBox="0 0 160 130" role="img" aria-label="Schatkist, '+(all?'open':'dicht')+'">';
- if(all){
-  s+='<circle cx="80" cy="60" r="58" fill="'+G+'" opacity=".2"/>';
-  s+='<path d="M30 62L38 10Q80 0 122 10L130 62z" fill="'+W2+'" stroke="'+W2+'" stroke-width="2"/><path d="M42 58L47 18Q80 11 113 18L118 58z" fill="'+W+'"/>';
- }
- s+='<rect x="20" y="62" width="120" height="56" rx="5" fill="'+W+'" stroke="'+W2+'" stroke-width="3"/><rect x="20" y="82" width="120" height="7" fill="'+W2+'"/>';
- if(all){
-  s+='<path d="M26 63Q46 34 80 38Q114 34 134 63z" fill="'+G+'" stroke="'+W2+'" stroke-width="1.5"/>';
-  [[52,52],[72,46],[94,50],[112,56],[84,58],[62,60]].forEach(function(c){s+='<circle cx="'+c[0]+'" cy="'+c[1]+'" r="6" fill="'+G+'" stroke="'+W2+'" stroke-width="1.5"/>';});
-  s+='<path class="twinkle" d="M80 14l3 8 8 3-8 3-3 8-3-8-8-3 8-3z" fill="'+G+'"/><path class="twinkle b" d="M128 30l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="'+G+'"/><path class="twinkle c" d="M30 28l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="'+G+'"/>';
- }else{
-  s+='<path d="M20 62Q20 26 80 26Q140 26 140 62z" fill="'+W+'" stroke="'+W2+'" stroke-width="3"/><path d="M20 50H140" stroke="'+W2+'" stroke-width="5"/>';
-  s+='<rect x="70" y="56" width="20" height="24" rx="3" fill="'+G+'" stroke="'+W2+'" stroke-width="2"/><circle cx="80" cy="66" r="3.5" fill="'+W2+'"/><rect x="78.5" y="66" width="3" height="8" fill="'+W2+'"/>';
- }
- return s+'</svg>';
+function chestHTML(open,play,id){
+ return '<div class="kchest'+(open?' open':'')+'"'+(play?' data-kplay="'+esc(id)+'"':'')+' role="img" aria-label="Schatkist, '+(open?'open':'dicht')+'">'+
+  '<img class="c" src="kist-dicht.webp" alt=""><img class="o" src="kist-open.webp" alt="">'+
+  '<span class="ksp" style="left:18%;top:8%">✦</span><span class="ksp" style="left:78%;top:4%;animation-delay:.8s">✦</span><span class="ksp" style="left:50%;top:-2%;animation-delay:1.5s">✦</span><span class="ksp" style="left:90%;top:36%;animation-delay:.4s">✦</span><span class="ksp" style="left:4%;top:40%;animation-delay:1.2s">✦</span></div>';
 }
+var reduce=function(){try{return window.matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(e){return false;}};
+function playOpen(ch){
+ var row=ch.parentNode,key=row&&row.querySelector('.kkey');
+ if(!key||reduce()||!key.animate){ch.classList.add('open');return;}
+ var kr=key.getBoundingClientRect(),cr=ch.getBoundingClientRect(),sx=window.pageXOffset,sy=window.pageYOffset;
+ var cl=key.cloneNode(true);
+ cl.style.cssText='position:absolute;left:'+(kr.left+sx)+'px;top:'+(kr.top+sy)+'px;width:'+kr.width+'px;height:'+kr.height+'px;margin:0;z-index:9999;pointer-events:none;max-width:none;box-shadow:0 0 28px rgba(255,200,90,.7)';
+ document.body.appendChild(cl);
+ var dx=(cr.left+cr.width/2)-(kr.left+kr.width/2),dy=(cr.top+cr.height*.55)-(kr.top+kr.height/2);
+ var a=cl.animate([
+  {transform:'translate(0,0) scale(1) rotate(0)',opacity:1},
+  {transform:'translate(0,-14px) scale(1.04) rotate(0)',opacity:1,offset:.18},
+  {transform:'translate('+dx+'px,'+dy+'px) scale(.2) rotate(-22deg)',opacity:.0}
+ ],{duration:1300,easing:'cubic-bezier(.5,0,.3,1)',fill:'forwards'});
+ var done=function(){if(cl.parentNode)cl.parentNode.removeChild(cl);ch.classList.add('pop');ch.classList.add('open');};
+ a.onfinish=done;a.oncancel=done;
+}
+var io=null,scanQ=false;
+function scan(){
+ scanQ=false;
+ var list=document.querySelectorAll('[data-kplay]:not([data-kseen])');
+ if(!list.length)return;
+ if(!('IntersectionObserver' in window)){[].forEach.call(list,function(e){e.setAttribute('data-kseen','1');played[e.getAttribute('data-kplay')]=true;e.classList.add('open');});return;}
+ if(!io)io=new IntersectionObserver(function(es){es.forEach(function(en){
+  if(!en.isIntersecting)return;io.unobserve(en.target);
+  var id=en.target.getAttribute('data-kplay');played[id]=true;en.target.removeAttribute('data-kplay');
+  setTimeout(function(){playOpen(en.target);},350);
+ });},{threshold:.6});
+ [].forEach.call(list,function(e){e.setAttribute('data-kseen','1');io.observe(e);});
+}
+function queueScan(){if(scanQ)return;scanQ=true;(window.requestAnimationFrame||setTimeout)(scan);}
+try{new MutationObserver(queueScan).observe(document.documentElement,{childList:true,subtree:true});}catch(e){}
+document.addEventListener('DOMContentLoaded',queueScan);window.addEventListener('load',queueScan);
 function proofHTML(o,ok,date){
  var name=get('ict-naam')||'';
  return '<div class="proof" id="proof-'+esc(o.id)+'"><span class="kk">Bewijs van voltooiing</span>'+
@@ -364,9 +394,9 @@ ICT.kist=function(o){
  var list=o.levels.map(function(l,i){return '<li><span class="'+(ok[i]?'y':'n')+'">'+(ok[i]?'✓':'·')+'</span><span>Deel '+(i+1)+': '+esc(l.naam)+(ok[i]?' <span class="muted">(gehaald)</span>':'')+'</span></li>';}).join('');
  var h='<section class="kist" data-kist="'+esc(o.id)+'" aria-label="Sleutel en schatkist"><h2>Sleutel en schatkist</h2>'+
   '<p class="small">'+(all?'Je hebt alle delen van de sleutel.':'Haal elk niveau om een deel van de sleutel te krijgen. Met de hele sleutel open je de schatkist.')+'</p>'+
-  '<div class="kist-row">'+keySVG(ok,all)+chestSVG(all)+'</div><ul class="kist-parts">'+list+'</ul>';
+  '<div class="kist-row">'+keyHTML(ok)+chestHTML(all&&played[o.id],all&&!played[o.id],o.id)+'</div><ul class="kist-parts">'+list+'</ul>';
  if(all){
-  h+='<p class="kist-win">De schatkist is open! Goed gedaan.</p><button type="button" class="ict-btn" data-kist-proof="'+esc(o.id)+'" aria-expanded="'+(!!shown[o.id])+'">'+(shown[o.id]?'Verberg bewijs':'Toon bewijs')+'</button>';
+  h+='<p class="kist-win">De schatkist is open! Goed gedaan.</p><button type="button" class="ict-btn" data-kist-replay="'+esc(o.id)+'">Open de kist opnieuw</button> <button type="button" class="ict-btn" data-kist-proof="'+esc(o.id)+'" aria-expanded="'+(!!shown[o.id])+'">'+(shown[o.id]?'Verberg bewijs':'Toon bewijs')+'</button>';
   if(shown[o.id])h+=proofHTML(o,ok,date);
  }else h+='<p class="muted small">Nog '+left+' sleuteldeel'+(left===1?'':'en')+' te gaan.</p>';
  return h+'</section>';
@@ -374,10 +404,11 @@ ICT.kist=function(o){
 
 /* ---------- gebeurtenissen ---------- */
 document.addEventListener('click',function(e){
- var t=e.target.closest?e.target.closest('[data-theme-toggle],[data-style-toggle],[data-kist-proof]'):null;
+ var t=e.target.closest?e.target.closest('[data-theme-toggle],[data-style-toggle],[data-kist-proof],[data-kist-replay]'):null;
  if(!t)return;
  if(t.hasAttribute('data-theme-toggle')){toggleTheme();return;}
  if(t.hasAttribute('data-style-toggle')){toggleStyle();return;}
+ if(t.hasAttribute('data-kist-replay')){var rid=t.getAttribute('data-kist-replay'),ro=reg[rid];if(ro){played[rid]=false;var rel=document.querySelector('[data-kist="'+rid+'"]');if(rel){var rd=document.createElement('div');rd.innerHTML=ICT.kist(ro);rel.parentNode.replaceChild(rd.firstChild,rel);}}return;}
  var id=t.getAttribute('data-kist-proof'),o=reg[id];if(!o)return;
  shown[id]=!shown[id];
  var el=document.querySelector('[data-kist="'+id+'"]');
