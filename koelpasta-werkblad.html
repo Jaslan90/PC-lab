@@ -413,6 +413,88 @@ paint();
 
 /*SHARED:END*/</script>
 <script>
+/* MiniPDF: kleine ingebouwde PDF-maker (A4, mm), zonder internet. Ondersteunt tekst, lijnen, rechthoeken en JPEG-afbeeldingen. */
+function MiniPDF(){
+  const K = 72 / 25.4, PH = 297;
+  let ops = [], font = "F1", fsize = 16, fill = [0,0,0], draw = [0,0,0], tcol = [0,0,0];
+  const imgs = [];
+  const mctx = document.createElement("canvas").getContext("2d");
+  const WIN = {"€":128,"‚":130,"„":132,"…":133,"‘":145,"’":146,"“":147,"”":148,"•":149,"–":150,"—":151,"™":153};
+  const enc = s => { let o = ""; for (const ch of String(s)) { const c = ch.charCodeAt(0); let b = c < 256 ? c : (WIN[ch] || 63); const x = String.fromCharCode(b); o += (x === "(" || x === ")" || x === "\\") ? "\\" + x : x; } return o; };
+  const n = v => (Math.round(v * 100) / 100).toString();
+  const col = c => c.map(v => n(v / 255)).join(" ");
+  const width = s => { mctx.font = (font === "F2" ? "bold " : "") + "100px Helvetica, Arial, sans-serif"; return mctx.measureText(String(s)).width / 100 * fsize / K; };
+  const api = {
+    setFont(_f, style){ font = style === "bold" ? "F2" : "F1"; },
+    setFontSize(s){ fsize = s; },
+    setTextColor(...c){ tcol = c; }, setFillColor(...c){ fill = c; }, setDrawColor(...c){ draw = c; },
+    getTextWidth: width,
+    splitTextToSize(text, maxW){
+      const out = [];
+      String(text).split("\n").forEach(par => {
+        let line = "";
+        par.split(/\s+/).filter(Boolean).forEach(w => {
+          const t = line ? line + " " + w : w;
+          if (width(t) <= maxW || !line) line = t; else { out.push(line); line = w; }
+        });
+        out.push(line);
+      });
+      return out;
+    },
+    text(t, x, y, o){
+      const lines = Array.isArray(t) ? t : [t];
+      lines.forEach((ln, i) => {
+        let xx = x; const w = width(ln);
+        if (o && o.align === "right") xx = x - w; else if (o && o.align === "center") xx = x - w / 2;
+        const yy = y + i * fsize * 1.15 / K;
+        ops.push(`BT /${font} ${n(fsize)} Tf ${col(tcol)} rg ${n(xx * K)} ${n((PH - yy) * K)} Td (${enc(ln)}) Tj ET`);
+      });
+    },
+    rect(x, y, w, h, style){
+      const r = `${n(x * K)} ${n((PH - y - h) * K)} ${n(w * K)} ${n(h * K)} re`;
+      ops.push(style === "F" ? `${col(fill)} rg ${r} f` : `${col(draw)} RG 0.57 w ${r} S`);
+    },
+    line(x1, y1, x2, y2){ ops.push(`${col(draw)} RG 0.57 w ${n(x1 * K)} ${n((PH - y1) * K)} m ${n(x2 * K)} ${n((PH - y2) * K)} l S`); },
+    addImage(dataUrl, _t, x, y, w, h){
+      const bin = atob(dataUrl.split(",")[1]);
+      let iw = 0, ih = 0;
+      for (let i = 2; i < bin.length;) {            // lees breedte/hoogte uit de JPEG-header
+        const m = bin.charCodeAt(i + 1), len = bin.charCodeAt(i + 2) * 256 + bin.charCodeAt(i + 3);
+        if (m >= 0xC0 && m <= 0xC3) { ih = bin.charCodeAt(i + 5) * 256 + bin.charCodeAt(i + 6); iw = bin.charCodeAt(i + 7) * 256 + bin.charCodeAt(i + 8); break; }
+        i += 2 + len;
+      }
+      const name = "Im" + (imgs.length + 1);
+      imgs.push({name, bin, iw, ih});
+      ops.push(`q ${n(w * K)} 0 0 ${n(h * K)} ${n(x * K)} ${n((PH - y - h) * K)} cm /${name} Do Q`);
+    },
+    output(){
+      const parts = [], offs = []; let len = 0;
+      const add = s => { parts.push(s); len += s.length; };
+      const obj = (i, body) => { offs[i] = len; add(`${i} 0 obj\n${body}\nendobj\n`); };
+      add("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n");
+      const content = ops.join("\n");
+      const firstImg = 7;
+      const xo = imgs.map((im, k) => `/${im.name} ${firstImg + k} 0 R`).join(" ");
+      obj(1, "<< /Type /Catalog /Pages 2 0 R >>");
+      obj(2, "<< /Type /Pages /Kids [3 0 R] /Count 1 >>");
+      obj(3, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> /XObject << ${xo} >> >> /Contents 6 0 R >>`);
+      obj(4, "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
+      obj(5, "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
+      obj(6, `<< /Length ${content.length} >>\nstream\n${content}\nendstream`);
+      imgs.forEach((im, k) => obj(firstImg + k, `<< /Type /XObject /Subtype /Image /Width ${im.iw} /Height ${im.ih} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${im.bin.length} >>\nstream\n${im.bin}\nendstream`));
+      const total = firstImg + imgs.length;
+      const xref = len;
+      let x = `xref\n0 ${total}\n0000000000 65535 f \n`;
+      for (let i = 1; i < total; i++) x += String(offs[i]).padStart(10, "0") + " 00000 n \n";
+      add(x + `trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`);
+      const s = parts.join(""), bytes = new Uint8Array(s.length);
+      for (let i = 0; i < s.length; i++) bytes[i] = s.charCodeAt(i) & 255;
+      return new Blob([bytes], {type: "application/pdf"});
+    }
+  };
+  return api;
+}
+
 const PATTERNS = [
   {id:"a", name:"A. Erwt"},
   {id:"b", name:"B. Eén streep"},
@@ -570,8 +652,7 @@ function padImage(id){
 }
 
 function buildPdf(){
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({unit:"mm", format:"a4"});
+  const doc = MiniPDF();
   const W = 210, M = 16, CW = W - 2*M;
   const ACC = [184,90,34], INK = [24,35,43], MUTE = [91,104,114], LINE = [211,219,225];
   let y = 18;
@@ -643,7 +724,7 @@ function buildPdf(){
 }
 
 const fileName = () => {
-  const n = val("namen").split(/[\s,&]+/).filter(Boolean).slice(0, 2).join("-") || "leerling";
+  const n = val("namen").split(/[\s,&]+/).filter(w => w && !/^(en|and)$/i.test(w)).join("-").slice(0, 40) || "leerling";
   return `koelpasta-${n}.pdf`.replace(/[^\w.\-]/g, "");
 };
 
@@ -662,7 +743,6 @@ if (window.claude && typeof window.claude.use === "function") {
 
 exportBtn.onclick = async () => {
   if (!val("namen")) { setStatus("Vul eerst jullie namen in.", "err"); document.getElementById("namen").focus(); return; }
-  if (!window.jspdf) { setStatus("De PDF-maker is niet geladen. Controleer de internetverbinding en laad de pagina opnieuw.", "err"); return; }
   exportBtn.disabled = true; setStatus("PDF maken…", "");
   try {
     const blob = buildPdf(), name = fileName();
