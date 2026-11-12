@@ -1,5 +1,4 @@
-106845
-pe html>
+<!doctype html>
 <html lang="nl">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -420,7 +419,7 @@ function itemHTML(i,n){
  else if(i.t==='line')h+='<input type="text" data-v="'+i.id+'" value="'+esc(S.v[i.id]||'')+'" aria-label="Antwoord '+n+'">';
  else if(i.t==='shot')h+=shotHTML(i.id,i.q);
  else if(i.t==='zoek'){
-  h+='<div class="zoek"><label>Naam van de behuizing<input type="text" data-v="'+i.id+'-naam" value="'+esc(S.v[i.id+'-naam']||'')+'"></label>'+
+  h+='<div class="zoek"><label>'+(i.nl||'Naam van de behuizing')+'<input type="text" data-v="'+i.id+'-naam" value="'+esc(S.v[i.id+'-naam']||'')+'"></label>'+
    '<label>'+(i.pl||'Prijs (&euro;)')+'<input type="text" inputmode="decimal" data-v="'+i.id+'-prijs" value="'+esc(S.v[i.id+'-prijs']||'')+'"></label>'+
    '<label class="wide">Link naar de pagina (optioneel)<input type="text" data-v="'+i.id+'-url" value="'+esc(S.v[i.id+'-url']||'')+'"></label></div>'+shotHTML(i.id+'-img','Schermafdruk '+n);
  }else if(i.t==='check'){
