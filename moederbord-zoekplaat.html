@@ -155,6 +155,9 @@ var css=''+
 '.kist-parts{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:15px}'+
 '.kist-parts li{display:grid;grid-template-columns:22px minmax(0,1fr);gap:6px}'+
 '.kist-parts .y{color:var(--ok)}.kist-parts .n{color:var(--muted)}'+
+'.sitenav{display:flex;gap:4px;flex-wrap:wrap;align-items:stretch;background:var(--surface);border-bottom:1.5px solid var(--ink);padding-block:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}'+
+'.sitenav a{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;font:500 13px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink);text-decoration:none;border-bottom:3px solid transparent;margin-bottom:-1.5px}'+
+'.sitenav a:hover{color:var(--copper)}.sitenav a[aria-current="page"]{border-bottom-color:var(--copper);font-weight:600}.sitenav a:focus-visible{outline:3px solid var(--copper);outline-offset:-3px}'+
 '.kist-win{font-weight:600;color:var(--ok)}'+
 '.ict-btn{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:8px 18px;border:1.5px solid var(--copper);background:var(--copper);color:var(--on-copper);font:600 15px var(--body);cursor:pointer;border-radius:3px;justify-self:start}'+
 '.ict-btn:hover{filter:brightness(1.07)}'+
@@ -315,6 +318,14 @@ document.addEventListener('input',function(e){
   [].forEach.call(document.querySelectorAll('[data-kist-name]'),function(n){n.textContent=v||'Jouw naam';});
  }
 });
+function mkNav(){
+ if(document.querySelector('.sitenav')||!document.body)return;
+ var f=(location.pathname.split('/').pop()||'index.html').toLowerCase(),pf=/^(portfolio|opdracht-)/.test(f),n=document.createElement('nav');
+ n.className='sitenav';n.setAttribute('aria-label','Hoofdmenu');
+ n.innerHTML='<a href="portfolio.html"'+(pf?' aria-current="page"':'')+'>Portfolio</a><a href="index.html"'+(!pf&&(f==='index.html'||f===''||f==='index.body.html')?' aria-current="page"':'')+'>Lessen</a>';
+ document.body.insertBefore(n,document.body.firstChild);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mkNav);else mkNav();
 paint();
 })();
 
